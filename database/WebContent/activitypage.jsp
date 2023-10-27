@@ -9,13 +9,13 @@
 <title>Activity page</title>
 </head>
 
-<center><h1>Welcome! You have been successfully logged in</h1> </center>
+<center><h1>Welcome David! You have been successfully logged in</h1> </center>
 
  
 	<body>
 	 <center>
 		 <a href="login.jsp"target ="_self" > logout</a><br><br> 
-		 <p> You can show all the transactions or other attributes here like balance, name of the user and others.</p>
+		 <p> You can see all the client request here.</p>
 		 </center>
 	</body>
 </html>

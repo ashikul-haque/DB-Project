@@ -79,8 +79,8 @@ public class userDAO
         }
     }
     
-    public List<user> listAllUsers() throws SQLException {
-        List<user> listUser = new ArrayList<user>();        
+    public List<Client> listAllUsers() throws SQLException {
+        List<Client> listUser = new ArrayList<Client>();        
         String sql = "SELECT * FROM Client";      
         connect_func();      
         statement = (Statement) connect.createStatement();
@@ -96,7 +96,7 @@ public class userDAO
             String phone = resultSet.getString("PhoneNumber");
 
              
-            user users = new user(email,firstName, lastName, password, creditcard, address, phone);
+            Client users = new Client(email,firstName, lastName, password, creditcard, address, phone);
             listUser.add(users);
         }        
         resultSet.close();
@@ -110,7 +110,7 @@ public class userDAO
         }
     }
     
-    public void insert(user users) throws SQLException {
+    public void insert(Client users) throws SQLException {
     	connect_func("root","pass1234");         
 		String sql = "insert into Client(Email, FirstName, LastName, Password, CreditCardInformation,Address,PhoneNumber) values (?, ?, ?, ?, ?, ?, ?)";
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
@@ -138,7 +138,7 @@ public class userDAO
         return rowDeleted;     
     }
      
-    public boolean update(user users) throws SQLException {
+    public boolean update(Client users) throws SQLException {
         String sql = "update Client set FirstName=?, LastName =?,Password = ?,CreditCardInformation=?,Address=?, PhoneNumber =? where Email = ?";
         connect_func();
         
@@ -156,8 +156,8 @@ public class userDAO
         return rowUpdated;     
     }
     
-    public user getUser(String email) throws SQLException {
-    	user user = null;
+    public Client getUser(String email) throws SQLException {
+    	Client user = null;
         String sql = "SELECT * FROM Client WHERE Email = ?";
          
         connect_func();
@@ -174,7 +174,7 @@ public class userDAO
             String creditcard = resultSet.getString("CreditCardInformation");
             String address = resultSet.getString("Address"); 
             String phone = resultSet.getString("PhoneNumber");
-            user = new user(email, firstName, lastName, password, creditcard, address,phone);
+            user = new Client(email, firstName, lastName, password, creditcard, address,phone);
         }
          
         resultSet.close();
@@ -371,7 +371,7 @@ public class userDAO
         
         String clientDataGeneration = (
         	    "INSERT INTO Client (ClientID, FirstName, LastName, Address, CreditCardInformation, PhoneNumber, Email, Password) VALUES " +
-        	    "(101, 'John', 'Doe', '123 Main St, Cityville', '**** **** **** 1234', '+1234567890', 'john.doe@email.com', 'password123'), " +
+        	    "(101, 'test', 'test', '123 Main St, Cityville', '**** **** **** 1234', '+1234567890', 'test@email.com', 'pass1234'), " +
         	    "(102, 'Jane', 'Smith', '456 Oak St, Townsville', '**** **** **** 5678', '+9876543210', 'jane.smith@email.com', 'pass456'), " +
         	    "(103, 'Alice', 'Johnson', '789 Pine St, Villagetown', '**** **** **** 9876', '+1122334455', 'alice.johnson@email.com', 'secretPass'), " +
         	    "(104, 'Bob', 'Williams', '567 Elm St, Countryside', '**** **** **** 3456', '+4455667788', 'bob.williams@email.com', 'securePass123'), " +

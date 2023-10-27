@@ -64,7 +64,13 @@ public class ControlServlet extends HttpServlet {
         	case "/logout":
         		logout(request,response);
         		break;
-        	 case "/list": 
+        	case "/addtree":
+        		addTree(request,response);
+        		break;
+        	case "/quotereq":
+        		quoteSubmission(request,response);
+        		break;
+        	case "/list": 
                  System.out.println("The action is: list");
                  listUser(request, response);           	
                  break;
@@ -80,7 +86,7 @@ public class ControlServlet extends HttpServlet {
 	        System.out.println("listUser started: 00000000000000000000000000000000000");
 
 	     
-	        List<user> listUser = userDAO.listAllUsers();
+	        List<Client> listUser = userDAO.listAllUsers();
 	        request.setAttribute("listUser", listUser);       
 	        RequestDispatcher dispatcher = request.getRequestDispatcher("UserList.jsp");       
 	        dispatcher.forward(request, response);
@@ -94,6 +100,15 @@ public class ControlServlet extends HttpServlet {
 	    	request.getRequestDispatcher("rootView.jsp").forward(request, response);
 	    }
 	    
+	    private void addTree(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Add tree");
+	    	request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
+	    }
+	    
+	    private void quoteSubmission(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Quote Submission");
+	    	request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
+	    }
 	    
 	    protected void login(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException {
 	    	 String email = request.getParameter("email");
@@ -110,15 +125,17 @@ public class ControlServlet extends HttpServlet {
 	    		 System.out.println("Login Successful! Redirecting to David");
 				 session = request.getSession();
 				 session.setAttribute("username", email);
-				 rootPage(request, response, "");
+				 request.getRequestDispatcher("activitypage.jsp").forward(request, response);
 	    	 }
 	    	 
 	    	 else if(userDAO.isValid(email, password)) 
 	    	 {
 			 	 
 			 	 currentUser = email;
+			 	 session = request.getSession();
+				 session.setAttribute("username", email);
 				 System.out.println("Login Successful! Redirecting");
-				 request.getRequestDispatcher("activitypage.jsp").forward(request, response);
+				 request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
 			 			 			 			 
 	    	 }
 	    	 else {
@@ -140,7 +157,7 @@ public class ControlServlet extends HttpServlet {
 	   	 	if (password.equals(confirm)) {
 	   	 		if (!userDAO.checkAddress(address)) {
 		   	 		System.out.println("Registration Successful! Added to database");
-		            user users = new user(email,firstName, lastName, password, creditcard, address, phone);
+		            Client users = new Client(email,firstName, lastName, password, creditcard, address, phone);
 		   	 		userDAO.insert(users);
 		   	 		response.sendRedirect("login.jsp");
 	   	 		}
