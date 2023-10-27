@@ -1,0 +1,8 @@
+INDEX VERSION 1.4+/Users/ashikulhaque/project-workspace/.metadata/.plugins/org.eclipse.wst.jsdt.core/indexes
+859127392.index
+1124652640.index
+389054619.index
+386581073.index
+3831181601.index
+1232692571.index
+577608687.index
