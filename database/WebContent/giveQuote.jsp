@@ -16,7 +16,7 @@
 		
 		<div align="center">
         <table border="1" cellpadding="6">
-            <caption><h1>List of Quotes</h1></caption>
+            <caption><h1>Quote History</h1></caption>
             <tr>
                 <th>Price</th>
                 <th>Start Date</th>
@@ -37,18 +37,16 @@
         </table>
 		</div>
 		
-		<table border="1" cellpadding="6">
-            <tr>
-               <form action = "rejectQuote" ${showReject == 1 ? '' : 'style="display:none;"'}>
-					<input type = "submit" value = "Reject"/>
-			   </form>
 		
-			   <form action = "acceptQuote" ${showReject == 1 ? '' : 'style="display:none;"'}>
-					<input type = "submit" value = "Accept"/>
-			   </form>
-            </tr>
-		</table>
+		  <form action = "acceptQuote" ${showReject == 1 ? '' : 'style="display:none;"'}>
+		  	<input type = "submit" value = "Accept"/>
+		  </form>
+		  
+		  <form action = "rejectQuote" ${showReject == 1 ? '' : 'style="display:none;"'}>
+		 	<input type = "submit" value = "Reject"/>
+		 </form>
 		
+		<div style="margin-bottom: 20px;"></div>
 		
 		<form action="submitQuote">
 			<table border="1" cellpadding="5">
@@ -74,6 +72,12 @@
 					<th>End Date: </th>
 					<td align="center" colspan="3">
 						<input type="text" name="workPeriodEndDate" size="45">
+					</td>
+				</tr>
+				<tr>
+					<th>Note: </th>
+					<td align="center" colspan="3">
+						<input type="text" name="note" size="45">
 					</td>
 				</tr>
 				<tr>

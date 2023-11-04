@@ -66,6 +66,9 @@ public class ControlServlet extends HttpServlet {
         		if (session.getAttribute("username").equals("david")) {
         			davidPage(request,response, "");
         		}
+        		if (session.getAttribute("username").equals("")) {
+        			response.sendRedirect("login.jsp");
+        		}
         		else {
         			userPage(request,response, "");
         		}
@@ -141,14 +144,17 @@ public class ControlServlet extends HttpServlet {
 	    private void giveQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Generate Quote");
 	    	String quoteReqID = request.getParameter("quoteReqID");
-	    	//System.out.println(quoteReqID);
+	    	List<Quote> quotes = userDAO.listQuoteReqQuotes(Integer.parseInt(quoteReqID));
 	    	request.setAttribute("quoteRequestID", quoteReqID);
+	    	
+	    	Quote latest = quotes.get(quotes.size() - 1);
+	    	
 	    	if(session.getAttribute("username").equals("david"))
 	    		request.setAttribute("showReject", 0);
-	    	else
+	    	else if(latest.getStatus().equals("pending"))
 	    		request.setAttribute("showReject", 1);
 	    	
-	    	request.setAttribute("listQuotes", userDAO.listQuoteReqQuotes(Integer.parseInt(quoteReqID)));
+	    	request.setAttribute("listQuotes", quotes);
 	    	request.getRequestDispatcher("giveQuote.jsp").forward(request, response);
 	    }
 	    
