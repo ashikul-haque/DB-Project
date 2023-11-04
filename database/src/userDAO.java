@@ -156,6 +156,35 @@ public class userDAO
         return rowUpdated;     
     }
     
+    public List<QuoteRequest> listAllQuoteReqs() throws SQLException {
+        List<QuoteRequest> listUser = new ArrayList<QuoteRequest>();        
+        String sql = "SELECT * FROM QuoteRequest";      
+        connect_func();      
+        statement = (Statement) connect.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+         
+        while (resultSet.next()) {
+        	Integer QuoteRequestID = resultSet.getInt("QuoteRequestID");
+        	Integer TreeID1 = resultSet.getInt("TreeID1");
+        	Integer TreeID2 = resultSet.getInt("TreeID2");
+        	Integer TreeID3 = resultSet.getInt("TreeID3");
+        	Integer ClientID = resultSet.getInt("ClientID");
+            String DateSubmitted = resultSet.getString("DateSubmitted"); 
+            String Status = resultSet.getString("Status");
+            String ClientNote = resultSet.getString("ClientNote");
+            
+            QuoteRequest quoteReq = null;
+            
+            quoteReq = new QuoteRequest(QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote);
+            
+            listUser.add(quoteReq);
+        }        
+        resultSet.close();
+        disconnect();        
+        return listUser;
+    }
+    
+    
     public Client getUser(String email) throws SQLException {
     	Client user = null;
         String sql = "SELECT * FROM Client WHERE Email = ?";
@@ -308,14 +337,19 @@ public class userDAO
         String quoteRequestTableCreation = (
         	    "CREATE TABLE QuoteRequest (" +
         	    "QuoteRequestID INT AUTO_INCREMENT PRIMARY KEY," +
-        	    "TreeID INT," +
+        	    "TreeID1 INT," +
+        	    "TreeID2 INT," +
+        	    "TreeID3 INT," +
         	    "ClientID INT," +
         	    "DateSubmitted DATE," +
         	    "Status ENUM('pending', 'accepted', 'rejected')," +
         	    "ClientNote TEXT," +
-        	    "FOREIGN KEY (TreeID) REFERENCES Tree(TreeID)," +
+        	    "FOREIGN KEY (TreeID1) REFERENCES Tree(TreeID)," +
+        	    "FOREIGN KEY (TreeID2) REFERENCES Tree(TreeID)," +
+        	    "FOREIGN KEY (TreeID3) REFERENCES Tree(TreeID)," +
         	    "FOREIGN KEY (ClientID) REFERENCES Client(ClientID));"
         	);
+
 
         
         String quoteTableCreation = (
@@ -397,24 +431,46 @@ public class userDAO
         	    "(7, 'Medium', 5.0, 'Schoolyard', 12.0, 'tree7_pic1.jpg', 'tree7_pic2.jpg', 'tree7_pic3.jpg'), " +
         	    "(8, 'Large', 9.0, 'Playground', 18.0, 'tree8_pic1.jpg', 'tree8_pic2.jpg', 'tree8_pic3.jpg'), " +
         	    "(9, 'Small', 3.5, 'Front Yard', 7.0, 'tree9_pic1.jpg', 'tree9_pic2.jpg', 'tree9_pic3.jpg'), " +
-        	    "(10, 'Medium', 5.8, 'Back Yard', 14.5, 'tree10_pic1.jpg', 'tree10_pic2.jpg', 'tree10_pic3.jpg');"
+        	    "(10, 'Medium', 5.8, 'Back Yard', 14.5, 'tree10_pic1.jpg', 'tree10_pic2.jpg', 'tree10_pic3.jpg'), " +
+        	    "(11, 'Large', 10.0, 'Grove', 25.0, 'tree11_pic1.jpg', 'tree11_pic2.jpg', 'tree11_pic3.jpg'), " +
+        	    "(12, 'Medium', 6.5, 'Riverbank', 13.0, 'tree12_pic1.jpg', 'tree12_pic2.jpg', 'tree12_pic3.jpg'), " +
+        	    "(13, 'Small', 4.2, 'Mountain', 6.0, 'tree13_pic1.jpg', 'tree13_pic2.jpg', 'tree13_pic3.jpg'), " +
+        	    "(14, 'Large', 8.5, 'Oceanfront', 22.5, 'tree14_pic1.jpg', 'tree14_pic2.jpg', 'tree14_pic3.jpg'), " +
+        	    "(15, 'Medium', 5.0, 'Hillside', 11.0, 'tree15_pic1.jpg', 'tree15_pic2.jpg', 'tree15_pic3.jpg'), " +
+        	    "(16, 'Small', 3.2, 'Front Yard', 6.5, 'tree16_pic1.jpg', 'tree16_pic2.jpg', 'tree16_pic3.jpg'), " +
+        	    "(17, 'Medium', 5.7, 'Back Yard', 14.0, 'tree17_pic1.jpg', 'tree17_pic2.jpg', 'tree17_pic3.jpg'), " +
+        	    "(18, 'Large', 8.2, 'Side Yard', 16.5, 'tree18_pic1.jpg', 'tree18_pic2.jpg', 'tree18_pic3.jpg'), " +
+        	    "(19, 'Small', 3.8, 'Garden', 9.0, 'tree19_pic1.jpg', 'tree19_pic2.jpg', 'tree19_pic3.jpg'), " +
+        	    "(20, 'Medium', 5.1, 'Park', 11.5, 'tree20_pic1.jpg', 'tree20_pic2.jpg', 'tree20_pic3.jpg'), " +
+        	    "(21, 'Large', 9.0, 'Street', 19.0, 'tree21_pic1.jpg', 'tree21_pic2.jpg', 'tree21_pic3.jpg'), " +
+        	    "(22, 'Small', 3.4, 'Schoolyard', 7.5, 'tree22_pic1.jpg', 'tree22_pic2.jpg', 'tree22_pic3.jpg'), " +
+        	    "(23, 'Medium', 5.5, 'Playground', 15.0, 'tree23_pic1.jpg', 'tree23_pic2.jpg', 'tree23_pic3.jpg'), " +
+        	    "(24, 'Large', 8.8, 'Front Yard', 17.5, 'tree24_pic1.jpg', 'tree24_pic2.jpg', 'tree24_pic3.jpg'), " +
+        	    "(25, 'Medium', 5.3, 'Back Yard', 12.0, 'tree25_pic1.jpg', 'tree25_pic2.jpg', 'tree25_pic3.jpg'), " +
+        	    "(26, 'Small', 3.6, 'Grove', 8.5, 'tree26_pic1.jpg', 'tree26_pic2.jpg', 'tree26_pic3.jpg'), " +
+        	    "(27, 'Large', 9.5, 'Riverbank', 21.0, 'tree27_pic1.jpg', 'tree27_pic2.jpg', 'tree27_pic3.jpg'), " +
+        	    "(28, 'Medium', 5.9, 'Mountain', 14.5, 'tree28_pic1.jpg', 'tree28_pic2.jpg', 'tree28_pic3.jpg'), " +
+        	    "(29, 'Small', 3.1, 'Oceanfront', 6.0, 'tree29_pic1.jpg', 'tree29_pic2.jpg', 'tree29_pic3.jpg'), " +
+        	    "(30, 'Large', 8.3, 'Hillside', 16.0, 'tree30_pic1.jpg', 'tree30_pic2.jpg', 'tree30_pic3.jpg');"
         	);
+
 
 
         
         String quoteRequestDataGeneration = (
-        	    "INSERT INTO QuoteRequest (QuoteRequestID, TreeID, ClientID, DateSubmitted, Status, ClientNote) VALUES " +
-        	    "(1, 1, 101, '2023-10-01', 'pending', 'Client needs a quote for tree trimming.'), " +
-        	    "(2, 2, 102, '2023-10-02', 'pending', 'Requesting quote for tree removal.'), " +
-        	    "(3, 3, 103, '2023-10-03', 'accepted', 'Client approved the initial quote.'), " +
-        	    "(4, 4, 104, '2023-10-04', 'pending', 'Interested in tree pruning services.'), " +
-        	    "(5, 5, 105, '2023-10-05', 'pending', 'Client requires a quote for tree maintenance.'), " +
-        	    "(6, 6, 106, '2023-10-06', 'accepted', 'Client accepted the initial quote for tree removal.'), " +
-        	    "(7, 7, 107, '2023-10-07', 'pending', 'Requesting quote for tree trimming in schoolyard.'), " +
-        	    "(8, 8, 108, '2023-10-08', 'pending', 'Client needs a quote for tree pruning in the playground.'), " +
-        	    "(9, 9, 109, '2023-10-09', 'accepted', 'Client approved the quote for tree maintenance.'), " +
-        	    "(10, 10, 110, '2023-10-10', 'pending', 'Interested in tree trimming services for the backyard.');"
+        	    "INSERT INTO QuoteRequest (QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote) VALUES " +
+        	    "(1, 1, 2, 3, 101, '2023-10-01', 'pending', 'Client needs a quote for tree trimming.'), " +
+        	    "(2, 4, 5, 6, 102, '2023-10-02', 'pending', 'Requesting quote for tree removal.'), " +
+        	    "(3, 7, 8, 9, 103, '2023-10-03', 'accepted', 'Client approved the initial quote.'), " +
+        	    "(4, 10, 11, 12, 104, '2023-10-04', 'pending', 'Interested in tree pruning services.'), " +
+        	    "(5, 13, 14, 15, 105, '2023-10-05', 'pending', 'Client requires a quote for tree maintenance.'), " +
+        	    "(6, 16, 17, 18, 106, '2023-10-06', 'accepted', 'Client accepted the initial quote for tree removal.'), " +
+        	    "(7, 19, 20, 21, 107, '2023-10-07', 'pending', 'Requesting quote for tree trimming in schoolyard.'), " +
+        	    "(8, 22, 23, 24, 108, '2023-10-08', 'pending', 'Client needs a quote for tree pruning in the playground.'), " +
+        	    "(9, 25, 26, 27, 109, '2023-10-09', 'accepted', 'Client approved the quote for tree maintenance.'), " +
+        	    "(10, 28, 29, 30, 110, '2023-10-10', 'pending', 'Interested in tree trimming services for the backyard.');"
         	);
+
 
 
         

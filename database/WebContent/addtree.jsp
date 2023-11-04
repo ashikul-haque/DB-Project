@@ -61,7 +61,7 @@
 					</td>
 				</tr>
 			</table>
-			<a href="activitypage2.jsp" target="_self">Return to Home Page</a>
+			<a href="requestquote.jsp" target="_self">Return to Quote</a>
 		</form>
 </div>
 </body>

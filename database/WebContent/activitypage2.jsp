@@ -16,22 +16,9 @@
 	 <center>
 		 <a href="login.jsp"target ="_self" > logout</a><br><br> 
 		 
-		 <a href="addtree.jsp"target ="_self" > Add Tree</a><br><br> 
+		 <a href="requestquote.jsp"target ="_self" > Request Quote</a><br><br> 
 		 
-		 <form action="quotereq">
-		 	<table border="1" cellpadding="5">
-				<tr>
-					<th>Note: </th>
-					<td align="center" colspan="3">
-						<input type="text" name="note" size="45">
-					</td>
-				</tr>
-				<tr>
-					<td align="center" colspan="5">
-						<input type="submit" value="Request Quote"/>
-					</td>
-				</tr>
-		 </form>
+		 <a href="login.jsp"target ="_self" > Quote Status</a><br><br>
 		 
 		 </center>
 	</body>

@@ -1,6 +1,6 @@
 public class Quote {
-    private int quoteID;
-    private int quoteRequestID;
+    private Integer quoteID;
+    private Integer quoteRequestID;
     private double price;
     private String workPeriodStartDate;
     private String workPeriodEndDate;
@@ -13,7 +13,7 @@ public class Quote {
     }
 
     // Constructor with parameters
-    public Quote(int quoteID, int quoteRequestID, double price, String workPeriodStartDate,
+    public Quote(Integer quoteID, Integer quoteRequestID, double price, String workPeriodStartDate,
                  String workPeriodEndDate, String dateSubmitted, String status, String note) {
         this.quoteID = quoteID;
         this.quoteRequestID = quoteRequestID;
@@ -25,7 +25,7 @@ public class Quote {
         this.note = note;
     }
     
-	public Quote(int quoteID, int quoteRequestID, double price, String workPeriodStartDate, String workPeriodEndDate,
+	public Quote(Integer quoteID, Integer quoteRequestID, double price, String workPeriodStartDate, String workPeriodEndDate,
 			String dateSubmitted, String status) {
 		this.quoteID = quoteID;
 		this.quoteRequestID = quoteRequestID;
@@ -38,19 +38,19 @@ public class Quote {
 
     // Getters and Setters
 
-    public int getQuoteID() {
+    public Integer getQuoteID() {
         return quoteID;
     }
 
-    public void setQuoteID(int quoteID) {
+    public void setQuoteID(Integer quoteID) {
         this.quoteID = quoteID;
     }
 
-    public int getQuoteRequestID() {
+    public Integer getQuoteRequestID() {
         return quoteRequestID;
     }
 
-    public void setQuoteRequestID(int quoteRequestID) {
+    public void setQuoteRequestID(Integer quoteRequestID) {
         this.quoteRequestID = quoteRequestID;
     }
 
