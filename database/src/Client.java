@@ -1,5 +1,6 @@
 public class Client 
 {
+		
 		protected String password;
 	 	protected String email;
 	    protected String firstName;
@@ -7,6 +8,7 @@ public class Client
 	    protected String address;
 	    protected String creditcard;
 	    protected String phone;
+	    private Integer ClientID;
 	 
 	    //constructors
 	    public Client() {
@@ -17,13 +19,24 @@ public class Client
 	        this.email = email;
 	    }
 	    
-	    public Client(String email,String firstName, String lastName, String password,String creditcard, String address, String phone) 
+	    public Client(Integer ClientID, String email,String firstName, String lastName, String password,String creditcard, String address, String phone) 
 	    {
-	    	this(firstName,lastName,password,creditcard, address,phone);
+	    	this(ClientID, firstName,lastName,password,creditcard, address,phone);
 	    	this.email = email;
 	    }
 	 
 	
+	    public Client(Integer ClientID, String firstName, String lastName, String password,String creditcard, String address, String phone) 
+	    {
+	    	this.ClientID = ClientID;
+	    	this.firstName = firstName;
+	    	this.lastName = lastName;
+	    	this.password = password;
+	        this.creditcard = creditcard;
+	        this.address = address;
+	        this.phone = phone;
+	    }
+	    
 	    public Client(String firstName, String lastName, String password,String creditcard, String address, String phone) 
 	    {
 	    	this.firstName = firstName;
@@ -35,6 +48,13 @@ public class Client
 	    }
 	    
 	   //getter and setter methods
+	    public Integer getClientID() {
+	        return ClientID;
+	    }
+	    public void setClientID(Integer ClientID) {
+	        this.ClientID = ClientID;
+	    }
+	    
 	    public String getEmail() {
 	        return email;
 	    }

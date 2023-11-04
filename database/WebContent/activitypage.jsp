@@ -9,7 +9,7 @@
 <title>Activity page</title>
 </head>
 
-<center><h1>Welcome David! You have been successfully logged in</h1> </center>
+<center><h1>Welcome David!</h1> </center>
 
 <body>
 <div align="center">
@@ -21,7 +21,6 @@
         <table border="1" cellpadding="6">
             <caption><h2>List of QuoteReq</h2></caption>
             <tr>
-            	<th>Give Quote</th>
                 <th>Tree 1</th>
                 <th>Tree 2</th>
                 <th>Tree 3</th>
@@ -40,9 +39,17 @@
                     <td><c:out value="${users.status}" /></td>
                     <td><c:out value="${users.clientNote}"/></td>
                     <td>
-                    	<form action="giveQuote" method="post">
+                    	<form action="giveQuote" method="post" ${users.status == 'accepted' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
                     		<input type="submit" value="Show"/>
+                    	</form>
+                    	<form action="giveQuote" method="post" ${users.status == 'pending' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Accept"/>
+                    	</form>
+                    	<form action="rejectQuoteReq" method="post" ${users.status == 'pending' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Reject"/>
                     	</form>
                     </td>
             </c:forEach>

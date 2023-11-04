@@ -61,8 +61,14 @@ public class ControlServlet extends HttpServlet {
         	case "/root":
         		rootPage(request,response, "");
         		break;
-        	case "/david":
-        		davidPage(request,response, "");
+        	case "/home":
+        		//System.out.println(currentUser);
+        		if (session.getAttribute("username").equals("david")) {
+        			davidPage(request,response, "");
+        		}
+        		else {
+        			userPage(request,response, "");
+        		}
         		break;
         	case "/logout":
         		logout(request,response);
@@ -74,7 +80,7 @@ public class ControlServlet extends HttpServlet {
         		quoteReqSubmission(request,response);
         		break;
         	case "/giveQuote":
-        		generateQuote(request,response);
+        		giveQuote(request,response);
         		break;
         	case "/list": 
                  System.out.println("The action is: list");
@@ -112,6 +118,16 @@ public class ControlServlet extends HttpServlet {
 	    	request.getRequestDispatcher("activitypage.jsp").forward(request, response);
 	    }
 	    
+	    private void userPage(HttpServletRequest request, HttpServletResponse response, String view) throws ServletException, IOException, SQLException{
+	    	System.out.println("user view");
+	    	if(currentUser=="")
+	    		response.sendRedirect("login.jsp");
+	    	Integer ClientID = userDAO.getUser(currentUser).getClientID();
+	    	//System.out.println(ClientID);
+			request.setAttribute("listQuoteReqs", userDAO.listClientQuoteReqs(ClientID));
+	    	request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
+	    }
+	    
 	    private void addTree(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Add tree");
 	    	request.getRequestDispatcher("requestquote.jsp").forward(request, response);
@@ -122,11 +138,17 @@ public class ControlServlet extends HttpServlet {
 	    	request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
 	    }
 	    
-	    private void generateQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    private void giveQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Generate Quote");
 	    	String quoteReqID = request.getParameter("quoteReqID");
-	    	System.out.println(quoteReqID);
+	    	//System.out.println(quoteReqID);
 	    	request.setAttribute("quoteRequestID", quoteReqID);
+	    	if(session.getAttribute("username").equals("david"))
+	    		request.setAttribute("showReject", 0);
+	    	else
+	    		request.setAttribute("showReject", 1);
+	    	
+	    	request.setAttribute("listQuotes", userDAO.listQuoteReqQuotes(Integer.parseInt(quoteReqID)));
 	    	request.getRequestDispatcher("giveQuote.jsp").forward(request, response);
 	    }
 	    
@@ -155,7 +177,7 @@ public class ControlServlet extends HttpServlet {
 			 	 session = request.getSession();
 				 session.setAttribute("username", email);
 				 System.out.println("Login Successful! Redirecting");
-				 request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
+				 userPage(request, response, "");
 			 			 			 			 
 	    	 }
 	    	 else {

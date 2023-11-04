@@ -177,7 +177,75 @@ public class userDAO
             
             quoteReq = new QuoteRequest(QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote);
             
+            
             listUser.add(quoteReq);
+        }        
+        resultSet.close();
+        disconnect();        
+        return listUser;
+    }
+    
+    public List<QuoteRequest> listClientQuoteReqs(Integer ClientID) throws SQLException {
+    	//System.out.println("in function");
+        List<QuoteRequest> listUser = new ArrayList<QuoteRequest>();        
+        String sql = "SELECT * FROM QuoteRequest WHERE QuoteRequest.ClientID = ?";      
+        
+        connect_func();      
+        
+        preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+        preparedStatement.setInt(1, ClientID);
+        
+        ResultSet resultSet = preparedStatement.executeQuery();
+         
+        while (resultSet.next()) {
+        	Integer QuoteRequestID = resultSet.getInt("QuoteRequestID");
+        	Integer TreeID1 = resultSet.getInt("TreeID1");
+        	Integer TreeID2 = resultSet.getInt("TreeID2");
+        	Integer TreeID3 = resultSet.getInt("TreeID3");
+            String DateSubmitted = resultSet.getString("DateSubmitted"); 
+            String Status = resultSet.getString("Status");
+            String ClientNote = resultSet.getString("ClientNote");
+            
+            QuoteRequest quoteReq = null;
+            
+            quoteReq = new QuoteRequest(QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote);
+            
+            //System.out.println(quoteReq.toString());
+            listUser.add(quoteReq);
+        }        
+        resultSet.close();
+        disconnect();        
+        return listUser;
+    }
+    
+    public List<Quote> listQuoteReqQuotes(Integer QuoteRequestID) throws SQLException {
+    	//System.out.println("in function");
+        List<Quote> listUser = new ArrayList<Quote>();        
+        String sql = "SELECT * FROM Quote WHERE Quote.QuoteRequestID = ? ORDER BY DateSubmitted ASC";      
+        
+        connect_func();      
+        
+        preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+        preparedStatement.setInt(1, QuoteRequestID);
+        
+        ResultSet resultSet = preparedStatement.executeQuery();
+         
+        while (resultSet.next()) {
+        	
+        	Integer QuoteID = resultSet.getInt("QuoteID");
+        	double Price = resultSet.getDouble("Price");
+        	String WorkPeriodStartDate = resultSet.getString("WorkPeriodStartDate");
+        	String WorkPeriodEndDate = resultSet.getString("WorkPeriodEndDate");
+            String DateSubmitted = resultSet.getString("DateSubmitted"); 
+            String Status = resultSet.getString("Status");
+            String Note = resultSet.getString("Note");
+            
+            Quote quote = null;
+            
+            quote = new Quote(QuoteID, QuoteRequestID, Price, WorkPeriodStartDate, WorkPeriodEndDate, DateSubmitted, Status, Note);
+            
+            //System.out.println(quote.toString());
+            listUser.add(quote);
         }        
         resultSet.close();
         disconnect();        
@@ -197,13 +265,14 @@ public class userDAO
         ResultSet resultSet = preparedStatement.executeQuery();
          
         if (resultSet.next()) {
+        	Integer clientID = resultSet.getInt("ClientID");
             String firstName = resultSet.getString("FirstName");
             String lastName = resultSet.getString("LastName");
             String password = resultSet.getString("Password");
             String creditcard = resultSet.getString("CreditCardInformation");
             String address = resultSet.getString("Address"); 
             String phone = resultSet.getString("PhoneNumber");
-            user = new Client(email, firstName, lastName, password, creditcard, address,phone);
+            user = new Client(clientID, email, firstName, lastName, password, creditcard, address,phone);
         }
          
         resultSet.close();
