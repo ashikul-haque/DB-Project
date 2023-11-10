@@ -126,6 +126,53 @@ public class userDAO
         preparedStatement.close();
     }
     
+    public void insert(Tree tree) throws SQLException {
+    	connect_func("root","pass1234");         
+		String sql = "insert into Tree(QuoteRequestID, Size, Height, Location, DistanceToHouse, Picture1, Picture2, Picture3) values (?, ?, ?, ?, ?, ?, ?, ?)";
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setInt(1, tree.getquoteReqID());
+			preparedStatement.setString(2, tree.getSize());
+			preparedStatement.setString(3, tree.getHeight());
+			preparedStatement.setString(4, tree.getLocation());
+			preparedStatement.setString(5, tree.getDistanceToHouse());
+			preparedStatement.setString(6, tree.getPicture1());		
+			preparedStatement.setString(7, tree.getPicture2());
+			preparedStatement.setString(8, tree.getPicture3());
+
+		preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+    
+    public void insert(QuoteRequest quoteReq) throws SQLException {
+    	connect_func("root","pass1234");         
+		String sql = "INSERT INTO QuoteRequest (QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote) values (?, ?, ?, ?, ?)";
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setInt(1, quoteReq.getQuoteRequestID());
+			preparedStatement.setInt(2, quoteReq.getClientID());
+			preparedStatement.setString(3, quoteReq.getDateSubmitted());
+			preparedStatement.setString(4, quoteReq.getStatus());
+			preparedStatement.setString(5, quoteReq.getClientNote());
+
+		preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+    
+    public void insert(Quote quote) throws SQLException {
+    	connect_func();         
+		String sql = "INSERT INTO Quote (QuoteRequestID, Price, WorkPeriodStartDate, WorkPeriodEndDate, DateSubmitted, Status, Note) values (?, ?, ?, ?, ?, ?, ?)";
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setInt(1, quote.getQuoteRequestID());
+			preparedStatement.setDouble(2, quote.getPrice());
+			preparedStatement.setString(3, quote.getWorkPeriodStartDate());
+			preparedStatement.setString(4, quote.getWorkPeriodEndDate());
+			preparedStatement.setString(5, quote.getDateSubmitted());
+			preparedStatement.setString(6, quote.getStatus());
+			preparedStatement.setString(7, quote.getNote());
+
+		preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+    
     public boolean delete(String email) throws SQLException {
         String sql = "DELETE FROM Client WHERE Email = ?";        
         connect_func();
@@ -156,6 +203,100 @@ public class userDAO
         return rowUpdated;     
     }
     
+    public boolean update(int quoteReqID, String status) throws SQLException {
+        String sql = "UPDATE QuoteRequest SET Status=? WHERE QuoteRequestID = ?";
+        connect_func();
+
+        preparedStatement = connect.prepareStatement(sql);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, quoteReqID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+        preparedStatement.close();
+        return rowUpdated;
+    }
+    
+    public boolean updateQuoteReqStatus(int quoteID, String status) throws SQLException {
+        String sqlSelect = "SELECT QuoteRequestID FROM Quote WHERE QuoteID = ?";
+        String sqlUpdate = "UPDATE QuoteRequest SET Status=? WHERE QuoteRequestID = ?";
+
+        connect_func();
+
+        // Fetch the QuoteRequestID associated with the given QuoteID
+        preparedStatement = connect.prepareStatement(sqlSelect);
+        preparedStatement.setInt(1, quoteID);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        int quoteRequestID = 0;
+        if (resultSet.next()) {
+            quoteRequestID = resultSet.getInt("QuoteRequestID");
+        }
+
+        // Update the row in QuoteRequest with the new Status
+        preparedStatement = connect.prepareStatement(sqlUpdate);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, quoteRequestID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+
+        // Close resources
+        resultSet.close();
+        preparedStatement.close();
+
+        return rowUpdated;
+    }
+
+
+    
+    public boolean updateQuote(int quoteID, String status) throws SQLException {
+        String sql = "UPDATE Quote SET Status=? WHERE QuoteID = ?";
+        connect_func();
+
+        preparedStatement = connect.prepareStatement(sql);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, quoteID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+        preparedStatement.close();
+        return rowUpdated;
+    }
+
+    
+    public boolean updateQuote(int quoteID, String status, String note) throws SQLException {
+        String sqlSelect = "SELECT Note FROM Quote WHERE QuoteID = ?";
+        String sqlUpdate = "UPDATE Quote SET Status=?, Note=? WHERE QuoteID = ?";
+
+        connect_func();
+
+        // Fetch the existing note value
+        preparedStatement = connect.prepareStatement(sqlSelect);
+        preparedStatement.setInt(1, quoteID);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        String existingNote = "";
+        if (resultSet.next()) {
+            existingNote = resultSet.getString("Note");
+        }
+
+        // Concatenate the new note to the existing value
+        String updatedNote = existingNote + " " + note;
+
+        // Update the row with the new values
+        preparedStatement = connect.prepareStatement(sqlUpdate);
+        preparedStatement.setString(1, status);
+        preparedStatement.setString(2, updatedNote);
+        preparedStatement.setInt(3, quoteID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+
+        // Close resources
+        resultSet.close();
+        preparedStatement.close();
+
+        return rowUpdated;
+    }
+
+    
     public List<QuoteRequest> listAllQuoteReqs() throws SQLException {
         List<QuoteRequest> listUser = new ArrayList<QuoteRequest>();        
         String sql = "SELECT * FROM QuoteRequest";      
@@ -165,9 +306,6 @@ public class userDAO
          
         while (resultSet.next()) {
         	Integer QuoteRequestID = resultSet.getInt("QuoteRequestID");
-        	Integer TreeID1 = resultSet.getInt("TreeID1");
-        	Integer TreeID2 = resultSet.getInt("TreeID2");
-        	Integer TreeID3 = resultSet.getInt("TreeID3");
         	Integer ClientID = resultSet.getInt("ClientID");
             String DateSubmitted = resultSet.getString("DateSubmitted"); 
             String Status = resultSet.getString("Status");
@@ -175,11 +313,22 @@ public class userDAO
             
             QuoteRequest quoteReq = null;
             
-            quoteReq = new QuoteRequest(QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote);
+            quoteReq = new QuoteRequest(QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote);
             
-            
+            String sql2 = "SELECT COUNT(*) AS TreeCount FROM Tree WHERE QuoteRequestID = ?";
+            try (PreparedStatement preparedStatement = (PreparedStatement) connect.prepareStatement(sql2)) {
+                preparedStatement.setInt(1, QuoteRequestID); // Set the actual QuoteRequestID
+                try (ResultSet resultSet2 = preparedStatement.executeQuery()) {
+                    if (resultSet2.next()) {
+                        int treeCount = resultSet2.getInt("TreeCount");
+                       quoteReq.setTreeCount(treeCount);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // Handle the exception appropriately
+            }
             listUser.add(quoteReq);
-        }        
+        }   
         resultSet.close();
         disconnect();        
         return listUser;
@@ -199,16 +348,13 @@ public class userDAO
          
         while (resultSet.next()) {
         	Integer QuoteRequestID = resultSet.getInt("QuoteRequestID");
-        	Integer TreeID1 = resultSet.getInt("TreeID1");
-        	Integer TreeID2 = resultSet.getInt("TreeID2");
-        	Integer TreeID3 = resultSet.getInt("TreeID3");
             String DateSubmitted = resultSet.getString("DateSubmitted"); 
             String Status = resultSet.getString("Status");
             String ClientNote = resultSet.getString("ClientNote");
             
             QuoteRequest quoteReq = null;
             
-            quoteReq = new QuoteRequest(QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote);
+            quoteReq = new QuoteRequest(QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote);
             
             //System.out.println(quoteReq.toString());
             listUser.add(quoteReq);
@@ -281,6 +427,38 @@ public class userDAO
         return user;
     }
     
+    public List<Tree> listTrees(Integer QuoteRequestID) throws SQLException {
+    	//System.out.println("in function");
+        List<Tree> listTree = new ArrayList<Tree>();        
+        String sql = "SELECT * FROM Tree WHERE Tree.QuoteRequestID = ?";      
+        
+        connect_func();      
+        
+        preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+        preparedStatement.setInt(1, QuoteRequestID);
+        
+        ResultSet resultSet = preparedStatement.executeQuery();
+         
+        while (resultSet.next()) {
+        	
+        	int treeID = resultSet.getInt("TreeID");
+            int quoteRequestID = resultSet.getInt("QuoteRequestID");
+            String size = resultSet.getString("Size");
+            String height = resultSet.getString("Height");
+            String location = resultSet.getString("Location");
+            String distanceToHouse = resultSet.getString("DistanceToHouse");
+            String picture1 = resultSet.getString("Picture1");
+            String picture2 = resultSet.getString("Picture2");
+            String picture3 = resultSet.getString("Picture3");
+
+            Tree tree = new Tree(treeID, quoteRequestID, size, height, location, distanceToHouse, picture1, picture2, picture3);
+            listTree.add(tree);
+        }        
+        resultSet.close();
+        disconnect();        
+        return listTree;
+    }
+    
     public boolean checkEmail(String email) throws SQLException {
     	boolean checks = false;
     	String sql = "SELECT * FROM Client WHERE Email = ?";
@@ -298,6 +476,7 @@ public class userDAO
         System.out.println(checks);
     	return checks;
     }
+    
     
     public boolean checkAddress(String address) throws SQLException {
     	boolean checks = false;
@@ -388,38 +567,33 @@ public class userDAO
         	    "Password VARCHAR(255));"
         	);
 
+        
+        String quoteRequestTableCreation = (
+        	    "CREATE TABLE QuoteRequest (" +
+        	    "QuoteRequestID INT PRIMARY KEY," +
+        	    "ClientID INT," +
+        	    "DateSubmitted DATE," +
+        	    "Status ENUM('pending', 'accepted', 'rejected', 'quoted', 'cancelled')," +
+        	    "ClientNote TEXT," +
+        	    "FOREIGN KEY (ClientID) REFERENCES Client(ClientID));"
+        	);
 
         
         String treeTableCreation = (
         	    "CREATE TABLE Tree (" +
         	    "TreeID INT AUTO_INCREMENT PRIMARY KEY," +
+        	    "QuoteRequestID INT," +
         	    "Size VARCHAR(255)," +
         	    "Height FLOAT," +
         	    "Location VARCHAR(255)," +
         	    "DistanceToHouse FLOAT," +
         	    "Picture1 VARCHAR(255)," +
         	    "Picture2 VARCHAR(255)," +
-        	    "Picture3 VARCHAR(255));"
+        	    "Picture3 VARCHAR(255)," +
+        	    "FOREIGN KEY (QuoteRequestID) REFERENCES QuoteRequest(QuoteRequestID));"
         	);
 
         
-        String quoteRequestTableCreation = (
-        	    "CREATE TABLE QuoteRequest (" +
-        	    "QuoteRequestID INT AUTO_INCREMENT PRIMARY KEY," +
-        	    "TreeID1 INT," +
-        	    "TreeID2 INT," +
-        	    "TreeID3 INT," +
-        	    "ClientID INT," +
-        	    "DateSubmitted DATE," +
-        	    "Status ENUM('pending', 'accepted', 'rejected')," +
-        	    "ClientNote TEXT," +
-        	    "FOREIGN KEY (TreeID1) REFERENCES Tree(TreeID)," +
-        	    "FOREIGN KEY (TreeID2) REFERENCES Tree(TreeID)," +
-        	    "FOREIGN KEY (TreeID3) REFERENCES Tree(TreeID)," +
-        	    "FOREIGN KEY (ClientID) REFERENCES Client(ClientID));"
-        	);
-
-
         
         String quoteTableCreation = (
         	    "CREATE TABLE Quote (" +
@@ -486,59 +660,48 @@ public class userDAO
         	    "(110, 'Peter', 'Brown', '123 Pine St, Oceanfront', '**** **** **** 4567', '+3344556677', 'peter.brown@email.com', 'peterPass');"
         	);
 
-
+        
+        String quoteRequestDataGeneration = (
+        	    "INSERT INTO QuoteRequest (QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote) VALUES " +
+        	    "(1, 101, '2023-10-01', 'pending', 'Client needs a quote for tree trimming.'), " +
+        	    "(2, 102, '2023-10-02', 'pending', 'Requesting quote for tree removal.'), " +
+        	    "(3, 103, '2023-10-03', 'accepted', 'Client approved the initial quote.'), " +
+        	    "(4, 104, '2023-10-04', 'pending', 'Interested in tree pruning services.'), " +
+        	    "(5, 105, '2023-10-05', 'pending', 'Client requires a quote for tree maintenance.'), " +
+        	    "(6, 106, '2023-10-06', 'accepted', 'Client accepted the initial quote for tree removal.'), " +
+        	    "(7, 107, '2023-10-07', 'pending', 'Requesting quote for tree trimming in schoolyard.'), " +
+        	    "(8, 108, '2023-10-08', 'pending', 'Client needs a quote for tree pruning in the playground.'), " +
+        	    "(9, 109, '2023-10-09', 'accepted', 'Client approved the quote for tree maintenance.'), " +
+        	    "(10, 110, '2023-10-10', 'pending', 'Interested in tree trimming services for the backyard.');"
+        	);
 
         
         String treeDataGeneration = (
-        	    "INSERT INTO Tree (TreeID, Size, Height, Location, DistanceToHouse, Picture1, Picture2, Picture3) VALUES " +
-        	    "(1, 'Medium', 5.5, 'Front Yard', 10.2, 'tree1_pic1.jpg', 'tree1_pic2.jpg', 'tree1_pic3.jpg'), " +
-        	    "(2, 'Large', 8.0, 'Back Yard', 15.0, 'tree2_pic1.jpg', 'tree2_pic2.jpg', 'tree2_pic3.jpg'), " +
-        	    "(3, 'Small', 3.0, 'Side Yard', 5.5, 'tree3_pic1.jpg', 'tree3_pic2.jpg', 'tree3_pic3.jpg'), " +
-        	    "(4, 'Medium', 6.0, 'Garden', 8.0, 'tree4_pic1.jpg', 'tree4_pic2.jpg', 'tree4_pic3.jpg'), " +
-        	    "(5, 'Large', 7.5, 'Park', 20.0, 'tree5_pic1.jpg', 'tree5_pic2.jpg', 'tree5_pic3.jpg'), " +
-        	    "(6, 'Small', 4.0, 'Street', 3.5, 'tree6_pic1.jpg', 'tree6_pic2.jpg', 'tree6_pic3.jpg'), " +
-        	    "(7, 'Medium', 5.0, 'Schoolyard', 12.0, 'tree7_pic1.jpg', 'tree7_pic2.jpg', 'tree7_pic3.jpg'), " +
-        	    "(8, 'Large', 9.0, 'Playground', 18.0, 'tree8_pic1.jpg', 'tree8_pic2.jpg', 'tree8_pic3.jpg'), " +
-        	    "(9, 'Small', 3.5, 'Front Yard', 7.0, 'tree9_pic1.jpg', 'tree9_pic2.jpg', 'tree9_pic3.jpg'), " +
-        	    "(10, 'Medium', 5.8, 'Back Yard', 14.5, 'tree10_pic1.jpg', 'tree10_pic2.jpg', 'tree10_pic3.jpg'), " +
-        	    "(11, 'Large', 10.0, 'Grove', 25.0, 'tree11_pic1.jpg', 'tree11_pic2.jpg', 'tree11_pic3.jpg'), " +
-        	    "(12, 'Medium', 6.5, 'Riverbank', 13.0, 'tree12_pic1.jpg', 'tree12_pic2.jpg', 'tree12_pic3.jpg'), " +
-        	    "(13, 'Small', 4.2, 'Mountain', 6.0, 'tree13_pic1.jpg', 'tree13_pic2.jpg', 'tree13_pic3.jpg'), " +
-        	    "(14, 'Large', 8.5, 'Oceanfront', 22.5, 'tree14_pic1.jpg', 'tree14_pic2.jpg', 'tree14_pic3.jpg'), " +
-        	    "(15, 'Medium', 5.0, 'Hillside', 11.0, 'tree15_pic1.jpg', 'tree15_pic2.jpg', 'tree15_pic3.jpg'), " +
-        	    "(16, 'Small', 3.2, 'Front Yard', 6.5, 'tree16_pic1.jpg', 'tree16_pic2.jpg', 'tree16_pic3.jpg'), " +
-        	    "(17, 'Medium', 5.7, 'Back Yard', 14.0, 'tree17_pic1.jpg', 'tree17_pic2.jpg', 'tree17_pic3.jpg'), " +
-        	    "(18, 'Large', 8.2, 'Side Yard', 16.5, 'tree18_pic1.jpg', 'tree18_pic2.jpg', 'tree18_pic3.jpg'), " +
-        	    "(19, 'Small', 3.8, 'Garden', 9.0, 'tree19_pic1.jpg', 'tree19_pic2.jpg', 'tree19_pic3.jpg'), " +
-        	    "(20, 'Medium', 5.1, 'Park', 11.5, 'tree20_pic1.jpg', 'tree20_pic2.jpg', 'tree20_pic3.jpg'), " +
-        	    "(21, 'Large', 9.0, 'Street', 19.0, 'tree21_pic1.jpg', 'tree21_pic2.jpg', 'tree21_pic3.jpg'), " +
-        	    "(22, 'Small', 3.4, 'Schoolyard', 7.5, 'tree22_pic1.jpg', 'tree22_pic2.jpg', 'tree22_pic3.jpg'), " +
-        	    "(23, 'Medium', 5.5, 'Playground', 15.0, 'tree23_pic1.jpg', 'tree23_pic2.jpg', 'tree23_pic3.jpg'), " +
-        	    "(24, 'Large', 8.8, 'Front Yard', 17.5, 'tree24_pic1.jpg', 'tree24_pic2.jpg', 'tree24_pic3.jpg'), " +
-        	    "(25, 'Medium', 5.3, 'Back Yard', 12.0, 'tree25_pic1.jpg', 'tree25_pic2.jpg', 'tree25_pic3.jpg'), " +
-        	    "(26, 'Small', 3.6, 'Grove', 8.5, 'tree26_pic1.jpg', 'tree26_pic2.jpg', 'tree26_pic3.jpg'), " +
-        	    "(27, 'Large', 9.5, 'Riverbank', 21.0, 'tree27_pic1.jpg', 'tree27_pic2.jpg', 'tree27_pic3.jpg'), " +
-        	    "(28, 'Medium', 5.9, 'Mountain', 14.5, 'tree28_pic1.jpg', 'tree28_pic2.jpg', 'tree28_pic3.jpg'), " +
-        	    "(29, 'Small', 3.1, 'Oceanfront', 6.0, 'tree29_pic1.jpg', 'tree29_pic2.jpg', 'tree29_pic3.jpg'), " +
-        	    "(30, 'Large', 8.3, 'Hillside', 16.0, 'tree30_pic1.jpg', 'tree30_pic2.jpg', 'tree30_pic3.jpg');"
+        	    "INSERT INTO Tree (TreeID, QuoteRequestID, Size, Height, Location, DistanceToHouse, Picture1, Picture2, Picture3) VALUES " +
+        	    "(1, 1, 'Medium', 5.5, 'Front Yard', 10.2, 'tree1_pic1.jpg', 'tree1_pic2.jpg', 'tree1_pic3.jpg'), " +
+        	    "(2, 2, 'Large', 8.0, 'Back Yard', 15.0, 'tree2_pic1.jpg', 'tree2_pic2.jpg', 'tree2_pic3.jpg'), " +
+        	    "(3, 2, 'Small', 3.0, 'Side Yard', 5.5, 'tree3_pic1.jpg', 'tree3_pic2.jpg', 'tree3_pic3.jpg'), " +
+        	    "(4, 3, 'Medium', 6.0, 'Garden', 8.0, 'tree4_pic1.jpg', 'tree4_pic2.jpg', 'tree4_pic3.jpg'), " +
+        	    "(5, 3, 'Large', 7.5, 'Park', 20.0, 'tree5_pic1.jpg', 'tree5_pic2.jpg', 'tree5_pic3.jpg'), " +
+        	    "(6, 4, 'Small', 4.0, 'Street', 3.5, 'tree6_pic1.jpg', 'tree6_pic2.jpg', 'tree6_pic3.jpg'), " +
+        	    "(7, 4, 'Medium', 5.0, 'Schoolyard', 12.0, 'tree7_pic1.jpg', 'tree7_pic2.jpg', 'tree7_pic3.jpg'), " +
+        	    "(8, 5, 'Large', 9.0, 'Playground', 18.0, 'tree8_pic1.jpg', 'tree8_pic2.jpg', 'tree8_pic3.jpg'), " +
+        	    "(9, 6, 'Small', 3.5, 'Front Yard', 7.0, 'tree9_pic1.jpg', 'tree9_pic2.jpg', 'tree9_pic3.jpg'), " +
+        	    "(10, 6, 'Medium', 5.8, 'Back Yard', 14.5, 'tree10_pic1.jpg', 'tree10_pic2.jpg', 'tree10_pic3.jpg'), " +
+        	    "(11, 6, 'Large', 10.0, 'Grove', 25.0, 'tree11_pic1.jpg', 'tree11_pic2.jpg', 'tree11_pic3.jpg'), " +
+        	    "(12, 6, 'Medium', 6.5, 'Riverbank', 13.0, 'tree12_pic1.jpg', 'tree12_pic2.jpg', 'tree12_pic3.jpg'), " +
+        	    "(13, 7, 'Small', 4.2, 'Mountain', 6.0, 'tree13_pic1.jpg', 'tree13_pic2.jpg', 'tree13_pic3.jpg'), " +
+        	    "(14, 7, 'Large', 8.5, 'Oceanfront', 22.5, 'tree14_pic1.jpg', 'tree14_pic2.jpg', 'tree14_pic3.jpg'), " +
+        	    "(15, 8, 'Medium', 5.0, 'Hillside', 11.0, 'tree15_pic1.jpg', 'tree15_pic2.jpg', 'tree15_pic3.jpg'), " +
+        	    "(16, 8, 'Large', 8.0, 'Back Yard', 15.0, 'tree16_pic1.jpg', 'tree16_pic2.jpg', 'tree16_pic3.jpg'), " +
+        	    "(17, 8, 'Small', 3.0, 'Side Yard', 5.5, 'tree17_pic1.jpg', 'tree17_pic2.jpg', 'tree17_pic3.jpg'), " +
+        	    "(18, 9, 'Medium', 6.0, 'Garden', 8.0, 'tree18_pic1.jpg', 'tree18_pic2.jpg', 'tree18_pic3.jpg'), " +
+        	    "(19, 10, 'Large', 7.5, 'Park', 20.0, 'tree19_pic1.jpg', 'tree19_pic2.jpg', 'tree19_pic3.jpg'), " +
+        	    "(20, 10, 'Small', 4.0, 'Street', 3.5, 'tree20_pic1.jpg', 'tree20_pic2.jpg', 'tree20_pic3.jpg');"
         	);
 
 
 
-        
-        String quoteRequestDataGeneration = (
-        	    "INSERT INTO QuoteRequest (QuoteRequestID, TreeID1, TreeID2, TreeID3, ClientID, DateSubmitted, Status, ClientNote) VALUES " +
-        	    "(1, 1, 2, 3, 101, '2023-10-01', 'pending', 'Client needs a quote for tree trimming.'), " +
-        	    "(2, 4, 5, 6, 102, '2023-10-02', 'pending', 'Requesting quote for tree removal.'), " +
-        	    "(3, 7, 8, 9, 103, '2023-10-03', 'accepted', 'Client approved the initial quote.'), " +
-        	    "(4, 10, 11, 12, 104, '2023-10-04', 'pending', 'Interested in tree pruning services.'), " +
-        	    "(5, 13, 14, 15, 105, '2023-10-05', 'pending', 'Client requires a quote for tree maintenance.'), " +
-        	    "(6, 16, 17, 18, 106, '2023-10-06', 'accepted', 'Client accepted the initial quote for tree removal.'), " +
-        	    "(7, 19, 20, 21, 107, '2023-10-07', 'pending', 'Requesting quote for tree trimming in schoolyard.'), " +
-        	    "(8, 22, 23, 24, 108, '2023-10-08', 'pending', 'Client needs a quote for tree pruning in the playground.'), " +
-        	    "(9, 25, 26, 27, 109, '2023-10-09', 'accepted', 'Client approved the quote for tree maintenance.'), " +
-        	    "(10, 28, 29, 30, 110, '2023-10-10', 'pending', 'Interested in tree trimming services for the backyard.');"
-        	);
 
 
 
@@ -546,6 +709,7 @@ public class userDAO
         String quoteDataGeneration = (
         	    "INSERT INTO Quote (QuoteID, QuoteRequestID, Price, WorkPeriodStartDate, WorkPeriodEndDate, DateSubmitted, Status, Note) VALUES " +
         	    "(1, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'pending', 'Initial quote for tree trimming.'), " +
+        	    "(11, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'pending', 'Initial quote for tree trimming.'), " +
         	    "(2, 2, 1200.00, '2023-10-08', '2023-10-15', '2023-10-06', 'accepted', 'Quote for tree removal approved.'), " +
         	    "(3, 3, 300.00, '2023-10-12', '2023-10-18', '2023-10-09', 'accepted', 'Finalized quote for tree pruning.'), " +
         	    "(4, 4, 150.00, '2023-10-15', '2023-10-20', '2023-10-11', 'pending', 'Initial quote for tree pruning.'), " +
@@ -619,15 +783,15 @@ public class userDAO
         
         String[] sqlStatements = {
         		clientTableCreation,
+        		quoteRequestTableCreation,
         	    treeTableCreation,
-        	    quoteRequestTableCreation,
         	    quoteTableCreation,
         	    orderOfWorkTableCreation,
         	    billTableCreation,
         	    billDisputeTableCreation,
         	    clientDataGeneration,
-        	    treeDataGeneration,
         	    quoteRequestDataGeneration,
+        	    treeDataGeneration,
         	    quoteDataGeneration,
         	    orderOfWorkDataGeneration,
         	    billDataGeneration,

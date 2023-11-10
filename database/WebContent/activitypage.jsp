@@ -21,27 +21,24 @@
         <table border="1" cellpadding="6">
             <caption><h2>List of QuoteReq</h2></caption>
             <tr>
-                <th>Tree 1</th>
-                <th>Tree 2</th>
-                <th>Tree 3</th>
                 <th>Client ID</th>
+                <th>Tree Count</th>
                 <th>Date Submitted</th>
                 <th>Status</th>
                 <th>Note</th>
+                <th>Action</th>
             </tr>
             <c:forEach var="users" items="${listQuoteReqs}">
                 <tr style="text-align:center">
-                    <td><c:out value="${users.treeID1}" /></td>
-                    <td><c:out value="${users.treeID2}" /></td>
-                    <td><c:out value="${users.treeID3}"/></td>
                     <td><c:out value="${users.clientID}"/></td>
+                    <td><c:out value="${users.treeCount}"/></td>
                     <td><c:out value="${users.dateSubmitted}" /></td>
                     <td><c:out value="${users.status}" /></td>
                     <td><c:out value="${users.clientNote}"/></td>
                     <td>
-                    	<form action="giveQuote" method="post" ${users.status == 'accepted' ? '' : 'style="display:none;"'}>
+                    	<form action="giveQuote" method="post" ${users.status == 'quoted' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
-                    		<input type="submit" value="Show"/>
+                    		<input type="submit" value="Quotes"/>
                     	</form>
                     	<form action="giveQuote" method="post" ${users.status == 'pending' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
@@ -50,6 +47,10 @@
                     	<form action="rejectQuoteReq" method="post" ${users.status == 'pending' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
                     		<input type="submit" value="Reject"/>
+                    	</form>
+                    	<form action="treeDetails" method="post" ${users.status == 'pending' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Tree Details"/>
                     	</form>
                     </td>
             </c:forEach>

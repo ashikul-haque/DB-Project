@@ -1,9 +1,10 @@
 public class Tree {
     private int treeID;
+    private int quoteReqID;
     private String size;
-    private double height;
+    private String height;
     private String location;
-    private double distanceToHouse;
+    private String distanceToHouse;
     private String picture1;
     private String picture2;
     private String picture3;
@@ -13,7 +14,7 @@ public class Tree {
     }
 
     // Constructor with parameters
-    public Tree(int treeID, String size, double height, String location, double distanceToHouse,
+    public Tree(int treeID, int quoteReqID, String size, String height, String location, String distanceToHouse,
                 String picture1, String picture2, String picture3) {
         this.treeID = treeID;
         this.size = size;
@@ -25,8 +26,27 @@ public class Tree {
         this.picture3 = picture3;
     }
     
-    public Tree(int treeID, String size, double height, String location, double distanceToHouse) {
-		this.treeID = treeID;
+    public Tree(int treeID, int quoteReqID, String size, String height, String location, String distanceToHouse) {
+    	this.treeID = treeID;
+    	this.size = size;
+    	this.height = height;
+    	this.location = location;
+    	this.distanceToHouse = distanceToHouse;
+    }
+    
+    public Tree(int quoteReqID, String size, String height, String location, String distanceToHouse, String picture1, String picture2, String picture3) {
+		this.quoteReqID = quoteReqID;
+		this.size = size;
+		this.height = height;
+		this.location = location;
+		this.distanceToHouse = distanceToHouse;
+		this.picture1 = picture1;
+        this.picture2 = picture2;
+        this.picture3 = picture3;
+    } 
+    
+    public Tree(int quoteReqID, String size, String height, String location, String distanceToHouse) {
+		this.quoteReqID = quoteReqID;
 		this.size = size;
 		this.height = height;
 		this.location = location;
@@ -42,6 +62,14 @@ public class Tree {
     public void setTreeID(int treeID) {
         this.treeID = treeID;
     }
+    
+    public int getquoteReqID() {
+        return quoteReqID;
+    }
+
+    public void setquoteReqID(int quoteReqID) {
+        this.quoteReqID = quoteReqID;
+    }
 
     public String getSize() {
         return size;
@@ -51,11 +79,11 @@ public class Tree {
         this.size = size;
     }
 
-    public double getHeight() {
+    public String getHeight() {
         return height;
     }
 
-    public void setHeight(double height) {
+    public void setHeight(String height) {
         this.height = height;
     }
 
@@ -67,11 +95,11 @@ public class Tree {
         this.location = location;
     }
 
-    public double getDistanceToHouse() {
+    public String getDistanceToHouse() {
         return distanceToHouse;
     }
 
-    public void setDistanceToHouse(double distanceToHouse) {
+    public void setDistanceToHouse(String distanceToHouse) {
         this.distanceToHouse = distanceToHouse;
     }
 

@@ -16,35 +16,30 @@
 	 <center>
 		 <a href="login.jsp"target ="_self" > logout</a><br><br> 
 		 
-		 <a href="requestquote.jsp"target ="_self" > New Request Quote</a><br><br> 
+		 <form action="requestQuote" method="post">
+         	<input type="submit" value="New Quote Request"/>
+         </form>
 		 
 		 <div align="center">
  
         <table border="1" cellpadding="6">
-            <caption><h1>List of SUbmitted QuoteReqs</h1></caption>
+            <caption><h1>List of Submitted QuoteReqs</h1></caption>
             <tr>
-                <th>Tree 1</th>
-                <th>Tree 2</th>
-                <th>Tree 3</th>
-                <th>Client ID</th>
                 <th>Date Submitted</th>
                 <th>Status</th>
                 <th>Note</th>
             </tr>
             <c:forEach var="users" items="${listQuoteReqs}">
                 <tr style="text-align:center">
-                    <td><c:out value="${users.treeID1}" /></td>
-                    <td><c:out value="${users.treeID2}" /></td>
-                    <td><c:out value="${users.treeID3}"/></td>
-                    <td><c:out value="${users.clientID}"/></td>
                     <td><c:out value="${users.dateSubmitted}" /></td>
                     <td><c:out value="${users.status}" /></td>
                     <td><c:out value="${users.clientNote}"/></td>
                     <td>
-                    	<form action="giveQuote" method="post" ${users.status == 'accepted' ? '' : 'style="display:none;"'}>
-                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
-                    		<input type="submit" value="Show"/>
-                    	</form>
+                    	<form action="giveQuote" method="post" ${users.status == 'quoted' ? '' : 'style="display:none;"'}>
+    						<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+    						<input type="submit" value="Show Quotes"/>
+						</form>
+
                     </td>
             </c:forEach>
         </table>

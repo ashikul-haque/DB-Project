@@ -25,9 +25,9 @@ public class Quote {
         this.note = note;
     }
     
-	public Quote(Integer quoteID, Integer quoteRequestID, double price, String workPeriodStartDate, String workPeriodEndDate,
-			String dateSubmitted, String status) {
-		this.quoteID = quoteID;
+	public Quote(Integer quoteRequestID, double price, String workPeriodStartDate, String workPeriodEndDate,
+			String dateSubmitted, String status, String note) {
+		this.note = note;
 		this.quoteRequestID = quoteRequestID;
 		this.price = price;
 		this.workPeriodStartDate = workPeriodStartDate;
