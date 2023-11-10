@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -202,20 +203,17 @@ public class ControlServlet extends HttpServlet {
 	    
 	    List<Tree> treeList = new ArrayList<>();
 	    
-	    private String saveFile(Part part, String fileName) throws IOException {
-	        String uploadPath = "/Users/ashikulhaque/project-workspace/database/WebContent/img";  // Change this to the desired directory
-	        String filePath = uploadPath + File.separator + fileName;
-
+	    private byte[] saveFile(Part part) throws IOException {
 	        try (InputStream inputStream = part.getInputStream();
-	             FileOutputStream outputStream = new FileOutputStream(filePath)) {
+	             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 	            byte[] buffer = new byte[4096];
-	            int bytesRead = -1;
+	            int bytesRead;
 	            while ((bytesRead = inputStream.read(buffer)) != -1) {
 	                outputStream.write(buffer, 0, bytesRead);
 	            }
 
-	            return filePath;
+	            return outputStream.toByteArray();
 	        }
 	    }
 	    
@@ -231,19 +229,13 @@ public class ControlServlet extends HttpServlet {
 	   	 	Part picture2Part = request.getPart("picture2");
 	   	 	Part picture3Part = request.getPart("picture3");
 	   	 	
-	   	 	saveFile(picture1Part, quoteReqID + "_tree1.jpg");
-	   	 	saveFile(picture2Part, quoteReqID + "_tree2.jpg");
-	   	 	saveFile(picture3Part, quoteReqID + "_tree3.jpg");
-	   	 	
-	   	 	String picture1Path = quoteReqID + "_tree1.jpg";
-	   	 	String picture2Path = quoteReqID + "_tree2.jpg";
-	   	 	String picture3Path = quoteReqID + "_tree3.jpg";
-	   	 	
-	   	 	System.out.println(picture1Path);
+	   	 	byte[] picture1Data = saveFile(picture1Part);
+	   	 	byte[] picture2Data = saveFile(picture2Part);
+	   	 	byte[] picture3Data = saveFile(picture3Part);
 	   	 	
 	   	 	//TODO: photo handling
 	    	
-	   	 	Tree tree = new Tree(quoteReqID, size, height, location, distance, picture1Path, picture2Path, picture3Path);
+	   	 	Tree tree = new Tree(quoteReqID, size, height, location, distance, picture1Data, picture2Data, picture3Data);
 	   	 	treeList.add(tree);
 	 		//userDAO.insert(tree);
 	 		

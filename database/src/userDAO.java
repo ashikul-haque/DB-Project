@@ -135,9 +135,9 @@ public class userDAO
 			preparedStatement.setString(3, tree.getHeight());
 			preparedStatement.setString(4, tree.getLocation());
 			preparedStatement.setString(5, tree.getDistanceToHouse());
-			preparedStatement.setString(6, tree.getPicture1());		
-			preparedStatement.setString(7, tree.getPicture2());
-			preparedStatement.setString(8, tree.getPicture3());
+			preparedStatement.setBytes(6, tree.getPicture1());		
+			preparedStatement.setBytes(7, tree.getPicture2());
+			preparedStatement.setBytes(8, tree.getPicture3());
 
 		preparedStatement.executeUpdate();
         preparedStatement.close();
@@ -447,9 +447,9 @@ public class userDAO
             String height = resultSet.getString("Height");
             String location = resultSet.getString("Location");
             String distanceToHouse = resultSet.getString("DistanceToHouse");
-            String picture1 = resultSet.getString("Picture1");
-            String picture2 = resultSet.getString("Picture2");
-            String picture3 = resultSet.getString("Picture3");
+            byte[] picture1 = resultSet.getBytes("Picture1");
+            byte[] picture2 = resultSet.getBytes("Picture2");
+            byte[] picture3 = resultSet.getBytes("Picture3");
 
             Tree tree = new Tree(treeID, quoteRequestID, size, height, location, distanceToHouse, picture1, picture2, picture3);
             listTree.add(tree);
@@ -587,9 +587,9 @@ public class userDAO
         	    "Height FLOAT," +
         	    "Location VARCHAR(255)," +
         	    "DistanceToHouse FLOAT," +
-        	    "Picture1 VARCHAR(255)," +
-        	    "Picture2 VARCHAR(255)," +
-        	    "Picture3 VARCHAR(255)," +
+        	    "Picture1 BLOB," +
+        	    "Picture2 BLOB," +
+        	    "Picture3 BLOB," +
         	    "FOREIGN KEY (QuoteRequestID) REFERENCES QuoteRequest(QuoteRequestID));"
         	);
 

@@ -15,11 +15,10 @@
 <div align="center">
 	<a href="login.jsp"target ="_self" > logout</a><br><br> 
 
-<h1>List all QuoteReqs</h1>
     <div align="center">
  
         <table border="1" cellpadding="6">
-            <caption><h2>List of QuoteReq</h2></caption>
+            <caption><h2>List of QuoteReqs</h2></caption>
             <tr>
                 <th>Client ID</th>
                 <th>Tree Count</th>
@@ -36,7 +35,7 @@
                     <td><c:out value="${users.status}" /></td>
                     <td><c:out value="${users.clientNote}"/></td>
                     <td>
-                    	<form action="giveQuote" method="post" ${users.status == 'quoted' ? '' : 'style="display:none;"'}>
+                    	<form action="giveQuote" method="post" ${users.status == 'quoted' || users.status == 'cancelled' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
                     		<input type="submit" value="Quotes"/>
                     	</form>
