@@ -1,7 +1,7 @@
 public class BillDispute {
     private int disputeID;
     private int billID;
-    private int clientID;
+    private String user;
     private String timeAndDate;
     private String changelog;
 
@@ -10,10 +10,17 @@ public class BillDispute {
     }
 
     // Constructor with parameters
-    public BillDispute(int disputeID, int billID, int clientID, String timeAndDate, String changelog) {
+    public BillDispute(int disputeID, int billID, String user, String timeAndDate, String changelog) {
         this.disputeID = disputeID;
         this.billID = billID;
-        this.clientID = clientID;
+        this.user = user;
+        this.timeAndDate = timeAndDate;
+        this.changelog = changelog;
+    }
+    
+    public BillDispute(int billID, String user, String timeAndDate, String changelog) {
+        this.billID = billID;
+        this.user = user;
         this.timeAndDate = timeAndDate;
         this.changelog = changelog;
     }
@@ -36,12 +43,12 @@ public class BillDispute {
         this.billID = billID;
     }
 
-    public int getClientID() {
-        return clientID;
+    public String getuser() {
+        return user;
     }
 
-    public void setClientID(int clientID) {
-        this.clientID = clientID;
+    public void setuser(String user) {
+        this.user = user;
     }
 
     public String getTimeAndDate() {
@@ -67,7 +74,7 @@ public class BillDispute {
         return "BillDispute{" +
                 "disputeID=" + disputeID +
                 ", billID=" + billID +
-                ", clientID=" + clientID +
+                ", user=" + user +
                 ", timeAndDate='" + timeAndDate + '\'' +
                 ", changelog='" + changelog + '\'' +
                 '}';

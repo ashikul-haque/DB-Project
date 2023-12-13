@@ -157,11 +157,26 @@ public class userDAO
     
     public void insert(Bill bill) throws SQLException {
     	connect_func();         
-		String sql = "INSERT INTO Bill (OrderOfWorkID, DateIssued, Status) VALUES (?, ?, ?)";
+		String sql = "INSERT INTO Bill (QuoteRequestID, AmountDue, DateIssued, Status, Note) VALUES (?, ?, ?, ?, ?)";
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-			preparedStatement.setInt(1, bill.getOrderOfWorkID());
-			preparedStatement.setString(2, bill.getDateIssued());
-			preparedStatement.setString(3, bill.getStatus());
+		preparedStatement.setInt(1, bill.getquoteReqID());
+			preparedStatement.setDouble(2, bill.getAmountDue());
+			preparedStatement.setString(3, bill.getDateIssued());
+			preparedStatement.setString(4, bill.getStatus());
+			preparedStatement.setString(5, bill.getNote());
+
+		preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+    
+    public void insert(BillDispute dispute) throws SQLException {
+    	connect_func();         
+		String sql = "INSERT INTO BillDispute (BillID, User, TimeAndDate, Changelog) VALUES (?, ?, ?, ?)";
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+		preparedStatement.setInt(1, dispute.getBillID());
+			preparedStatement.setString(2, dispute.getuser());
+			preparedStatement.setString(3, dispute.getTimeAndDate());
+			preparedStatement.setString(4, dispute.getChangelog());
 
 		preparedStatement.executeUpdate();
         preparedStatement.close();
@@ -241,6 +256,45 @@ public class userDAO
         return rowUpdated;
     }
     
+    public boolean updateOrder(int orderID, String status) throws SQLException {
+        String sql = "UPDATE OrderOfWork SET Status=? WHERE OrderOfWorkID = ?";
+        connect_func();
+
+        preparedStatement = connect.prepareStatement(sql);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, orderID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+        preparedStatement.close();
+        return rowUpdated;
+    }
+    
+    public boolean updateBill(int billID, String status) throws SQLException {
+        String sql = "UPDATE Bill SET Status=? WHERE BillID = ?";
+        connect_func();
+
+        preparedStatement = connect.prepareStatement(sql);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, billID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+        preparedStatement.close();
+        return rowUpdated;
+    }
+    
+    public boolean updateBill(int billID, double amountDue) throws SQLException {
+        String sql = "UPDATE Bill SET AmountDue=? WHERE BillID = ?";
+        connect_func();
+
+        preparedStatement = connect.prepareStatement(sql);
+        preparedStatement.setDouble(1, amountDue);
+        preparedStatement.setInt(2, billID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+        preparedStatement.close();
+        return rowUpdated;
+    }
+    
     public boolean updateQuoteReqStatus(int quoteID, String status) throws SQLException {
         String sqlSelect = "SELECT QuoteRequestID FROM Quote WHERE QuoteID = ?";
         String sqlUpdate = "UPDATE QuoteRequest SET Status=? WHERE QuoteRequestID = ?";
@@ -270,45 +324,6 @@ public class userDAO
 
         return rowUpdated;
     }
-    
-    public boolean updateQuoteRequestStatus(int quoteRequestID, String status) throws SQLException {
-        String sqlUpdate = "UPDATE QuoteRequest SET Status=? WHERE QuoteRequestID = ?";
-
-        connect_func();
-
-        // Update the row in QuoteRequest with the new Status
-        preparedStatement = connect.prepareStatement(sqlUpdate);
-        preparedStatement.setString(1, status);
-        preparedStatement.setInt(2, quoteRequestID);
-
-        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
-
-        // Close resources
-        resultSet.close();
-        preparedStatement.close();
-
-        return rowUpdated;
-    }
-    
-    public boolean updateOrderofWorkStatus(int orderID, String status) throws SQLException {
-        String sqlUpdate = "UPDATE OrderofWork SET Status=? WHERE OrderofWorkID = ?";
-
-        connect_func();
-
-        // Update the row in QuoteRequest with the new Status
-        preparedStatement = connect.prepareStatement(sqlUpdate);
-        preparedStatement.setString(1, status);
-        preparedStatement.setInt(2, orderID);
-
-        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
-
-        // Close resources
-        resultSet.close();
-        preparedStatement.close();
-
-        return rowUpdated;
-    }
-
 
     
     public boolean updateQuote(int quoteID, String status) throws SQLException {
@@ -359,40 +374,6 @@ public class userDAO
         return rowUpdated;
     }
     
-    public OrderOfWork getOrderOfWorkDetails(int quoteRequestID) throws SQLException {
-        OrderOfWork orderOfWork = null;
-        String sql = "SELECT ow.*, q.WorkPeriodStartDate AS QuoteStartDate, q.WorkPeriodEndDate AS QuoteEndDate " +
-                     "FROM OrderOfWork ow " +
-                     "INNER JOIN Quote q ON ow.QuoteID = q.QuoteID " +
-                     "WHERE q.QuoteRequestID = ? AND q.Status = 'accepted'";
-        
-        connect_func();
-        
-        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
-            preparedStatement.setInt(1, quoteRequestID);
-            
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    Integer orderOfWorkID = resultSet.getInt("OrderOfWorkID");
-                    // Add other fields as needed
-                    String startDate = resultSet.getString("QuoteStartDate");
-                    String endDate = resultSet.getString("QuoteEndDate");
-                    String dateCreated = resultSet.getString("DateCreated");
-                    String status = resultSet.getString("Status");
-                    
-                    // Create the OrderOfWork object
-                    orderOfWork = new OrderOfWork(orderOfWorkID, startDate, endDate, dateCreated, status);
-                }
-            }
-        } finally {
-            disconnect();
-        }
-        
-        return orderOfWork;
-    }
-
-
-
 
     
     public List<QuoteRequest> listAllQuoteReqs() throws SQLException {
@@ -497,6 +478,67 @@ public class userDAO
         return listUser;
     }
     
+    public OrderOfWork getOrderOfWorkDetails(int quoteRequestID) throws SQLException {
+        OrderOfWork orderOfWork = null;
+        String sql = "SELECT ow.*, q.WorkPeriodStartDate AS QuoteStartDate, q.WorkPeriodEndDate AS QuoteEndDate " +
+                     "FROM OrderOfWork ow " +
+                     "INNER JOIN Quote q ON ow.QuoteID = q.QuoteID " +
+                     "WHERE q.QuoteRequestID = ? AND q.Status = 'accepted'";
+        
+        connect_func();
+        
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            preparedStatement.setInt(1, quoteRequestID);
+            
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    Integer orderOfWorkID = resultSet.getInt("OrderOfWorkID");
+                    // Add other fields as needed
+                    String startDate = resultSet.getString("QuoteStartDate");
+                    String endDate = resultSet.getString("QuoteEndDate");
+                    String dateCreated = resultSet.getString("DateCreated");
+                    String status = resultSet.getString("Status");
+                    
+                    // Create the OrderOfWork object
+                    orderOfWork = new OrderOfWork(orderOfWorkID, startDate, endDate, dateCreated, status);
+                }
+            }
+        } finally {
+            disconnect();
+        }
+        
+        return orderOfWork;
+    }
+    
+    public Bill getBill(int QuoteReqID) throws SQLException {
+        Bill bill = null;
+
+        String sql = "SELECT * FROM Bill WHERE QuoteRequestID = ?";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            preparedStatement.setInt(1, QuoteReqID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Retrieve attributes from the result set
+                    int billID = resultSet.getInt("BillID");
+                    double amountDue = resultSet.getDouble("AmountDue");
+                    String DateIssued = resultSet.getString("DateIssued");
+                    String Status  = resultSet.getString("Status");
+                    String Note = resultSet.getString("Note");
+
+                    // Create a new Bill object with retrieved attributes
+                    bill = new Bill(billID, QuoteReqID, amountDue, DateIssued, Status, Note);
+                }
+            }
+        }
+
+        return bill;
+    }
+
+    
     public int getNextQuoteRequestId() throws SQLException {
         int nextQuoteRequestId = 0;
 
@@ -598,6 +640,35 @@ public class userDAO
         disconnect();        
         return listTree;
     }
+    
+    public List<BillDispute> listAllDisputes(int billID) throws SQLException {
+        List<BillDispute> billDisputes = new ArrayList<>();
+
+        String sql = "SELECT * FROM BillDispute WHERE BillID = ?";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            preparedStatement.setInt(1, billID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int disputeID = resultSet.getInt("DisputeID");
+                    String user = resultSet.getString("User");
+                    String timeAndDate = resultSet.getString("TimeAndDate");
+                    String changelog = resultSet.getString("Changelog");
+
+                    BillDispute billDispute = new BillDispute(disputeID, billID, user, timeAndDate, changelog);
+                    billDisputes.add(billDispute);
+                }
+            }
+        }
+
+        return billDisputes;
+    }
+
+    
+    
     
     public boolean checkEmail(String email) throws SQLException {
     	boolean checks = false;
@@ -713,7 +784,7 @@ public class userDAO
         	    "QuoteRequestID INT PRIMARY KEY," +
         	    "ClientID INT," +
         	    "DateSubmitted DATE," +
-        	    "Status ENUM('pending', 'accepted', 'rejected', 'quoted', 'cancelled', 'completed', 'billed')," +
+        	    "Status ENUM('pending', 'accepted', 'rejected', 'quoted', 'cancelled', 'completed', 'billed', 'paid')," +
         	    "ClientNote TEXT," +
         	    "FOREIGN KEY (ClientID) REFERENCES Client(ClientID));"
         	);
@@ -763,12 +834,12 @@ public class userDAO
         String billTableCreation = (
         	    "CREATE TABLE Bill (" +
         	    "BillID INT AUTO_INCREMENT PRIMARY KEY," +
-        	    "OrderOfWorkID INT," +
+        	    "QuoteRequestID INT," +
         	    "AmountDue DECIMAL(10, 2)," +
         	    "DateIssued DATE," +
         	    "Status ENUM('pending', 'paid', 'disputed')," +
         	    "Note TEXT," +
-        	    "FOREIGN KEY (OrderOfWorkID) REFERENCES OrderOfWork(OrderOfWorkID));"
+        	    "FOREIGN KEY (QuoteRequestID) REFERENCES QuoteRequest(QuoteRequestID));"
         	);
 
         
@@ -776,11 +847,10 @@ public class userDAO
         	    "CREATE TABLE BillDispute (" +
         	    "DisputeID INT AUTO_INCREMENT PRIMARY KEY," +
         	    "BillID INT," +
-        	    "ClientID INT," +
+        	    "User VARCHAR(255)," +
         	    "TimeAndDate DATETIME," +
         	    "Changelog TEXT," +
-        	    "FOREIGN KEY (BillID) REFERENCES Bill(BillID)," +
-        	    "FOREIGN KEY (ClientID) REFERENCES Client(ClientID));"
+        	    "FOREIGN KEY (BillID) REFERENCES Bill(BillID));"
         	);
 
         
@@ -803,7 +873,7 @@ public class userDAO
         
         String quoteRequestDataGeneration = (
         	    "INSERT INTO QuoteRequest (QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote) VALUES " +
-        	    "(1, 101, '2023-10-01', 'pending', 'Client needs a quote for tree trimming.'), " +
+        	    "(1, 101, '2023-10-01', 'accepted', 'Client needs a quote for tree trimming.'), " +
         	    "(2, 102, '2023-10-02', 'pending', 'Requesting quote for tree removal.'), " +
         	    "(3, 103, '2023-10-03', 'accepted', 'Client approved the initial quote.'), " +
         	    "(4, 104, '2023-10-04', 'pending', 'Interested in tree pruning services.'), " +
@@ -848,8 +918,8 @@ public class userDAO
         
         String quoteDataGeneration = (
         	    "INSERT INTO Quote (QuoteID, QuoteRequestID, Price, WorkPeriodStartDate, WorkPeriodEndDate, DateSubmitted, Status, Note) VALUES " +
-        	    "(1, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'pending', 'Initial quote for tree trimming.'), " +
-        	    "(11, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'pending', 'Initial quote for tree trimming.'), " +
+        	    "(1, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'rejected', 'Initial quote for tree trimming.'), " +
+        	    "(11, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'accepted', 'Updated quote for tree trimming.'), " +
         	    "(2, 2, 1200.00, '2023-10-08', '2023-10-15', '2023-10-06', 'accepted', 'Quote for tree removal approved.'), " +
         	    "(3, 3, 300.00, '2023-10-12', '2023-10-18', '2023-10-09', 'accepted', 'Finalized quote for tree pruning.'), " +
         	    "(4, 4, 150.00, '2023-10-15', '2023-10-20', '2023-10-11', 'pending', 'Initial quote for tree pruning.'), " +
@@ -865,7 +935,7 @@ public class userDAO
         
         String orderOfWorkDataGeneration = (
         	    "INSERT INTO OrderOfWork (OrderOfWorkID, QuoteID, DateCreated, Status) VALUES " +
-        	    "(1, 1, '2023-10-10', 'in progress'), " +
+        	    "(1, 11, '2023-10-10', 'in progress'), " +
         	    "(2, 2, '2023-10-15', 'completed'), " +
         	    "(3, 3, '2023-10-18', 'in progress'), " +
         	    "(4, 4, '2023-10-20', 'in progress'), " +
@@ -880,8 +950,7 @@ public class userDAO
 
         
         String billDataGeneration = (
-        	    "INSERT INTO Bill (BillID, OrderOfWorkID, AmountDue, DateIssued, Status, Note) VALUES " +
-        	    "(1, 1, 500.00, '2023-10-12', 'pending', 'Amount due for tree trimming work.'), " +
+        	    "INSERT INTO Bill (BillID, QuoteRequestID, AmountDue, DateIssued, Status, Note) VALUES " +
         	    "(2, 2, 1200.00, '2023-10-20', 'paid', 'Payment received for tree removal.'), " +
         	    "(3, 3, 300.00, '2023-10-25', 'pending', 'Amount due for tree pruning work.'), " +
         	    "(4, 4, 150.00, '2023-10-28', 'pending', 'Amount due for tree pruning work.'), " +
@@ -896,17 +965,16 @@ public class userDAO
 
         
         String billDisputeDataGeneration = (
-        	    "INSERT INTO BillDispute (DisputeID, BillID, ClientID, TimeAndDate, Changelog) VALUES " +
-        	    "(1, 1, 101, '2023-10-14 15:30:00', 'Client disputes the tree trimming charge.'), " +
-        	    "(2, 2, 102, '2023-10-28 10:45:00', 'Client queries the additional charge for tree pruning.'), " +
-        	    "(3, 3, 103, '2023-11-05 12:15:00', 'Client disputes the tree maintenance charge.'), " +
-        	    "(4, 4, 104, '2023-11-12 14:00:00', 'Client disputes the schoolyard tree trimming charge.'), " +
-        	    "(5, 5, 105, '2023-11-30 09:30:00', 'Client queries the tree trimming charge for the backyard.'), " +
-        	    "(6, 6, 106, '2023-10-22 11:00:00', 'Client disputes the tree removal charge.'), " +
-        	    "(7, 7, 107, '2023-10-30 13:45:00', 'Client queries the additional charge for tree pruning.'), " +
-        	    "(8, 8, 108, '2023-11-10 16:20:00', 'Client disputes the tree removal charge.'), " +
-        	    "(9, 9, 109, '2023-11-18 09:00:00', 'Client queries the additional charge for tree pruning.'), " +
-        	    "(10, 10, 110, '2023-11-25 14:30:00', 'Client disputes the tree maintenance charge.');"
+        	    "INSERT INTO BillDispute (DisputeID, BillID, User, TimeAndDate, Changelog) VALUES " +
+        	    "(2, 2, 'user', '2023-10-28 10:45:00', 'Client queries the additional charge for tree pruning.'), " +
+        	    "(3, 3, 'user', '2023-11-05 12:15:00', 'Client disputes the tree maintenance charge.'), " +
+        	    "(4, 4, 'user', '2023-11-12 14:00:00', 'Client disputes the schoolyard tree trimming charge.'), " +
+        	    "(5, 5, 'user', '2023-11-30 09:30:00', 'Client queries the tree trimming charge for the backyard.'), " +
+        	    "(6, 6, 'user', '2023-10-22 11:00:00', 'Client disputes the tree removal charge.'), " +
+        	    "(7, 7, 'user', '2023-10-30 13:45:00', 'Client queries the additional charge for tree pruning.'), " +
+        	    "(8, 8, 'user', '2023-11-10 16:20:00', 'Client disputes the tree removal charge.'), " +
+        	    "(9, 9, 'user', '2023-11-18 09:00:00', 'Client queries the additional charge for tree pruning.'), " +
+        	    "(10, 10, 'user', '2023-11-25 14:30:00', 'Client disputes the tree maintenance charge.');"
         	);
 
 

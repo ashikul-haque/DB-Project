@@ -23,17 +23,18 @@
             <caption><h1>Work Order</h1></caption>
             <tr>
                 <th>ID</th>
+                <th>Submission Date</th>
                 <th>Start Date</th>
                 <th>End Date</th>
-                <th>Submission Date</th>
                 <th>Tree Details</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
 					<tr style="text-align: center">
 						<td><c:out value="${order.orderOfWorkID}" /></td>
+						<td><c:out value="${order.dateCreated}" /></td>
 						<td><c:out value="${order.startDate}" /></td>
 						<td><c:out value="${order.endDate}" /></td>
-						<td><c:out value="${order.dateCreated}" /></td>
 						<td><c:out value="${order.status}" /></td>
 						<td>
 							<form action="treeDetails" method="post">
@@ -43,12 +44,16 @@
                     		</form>
                     	</td>
 						<td>
-							<form action="workOrderCompleted" ${user == 'david' ? '' : 'style="display:none;"'} method="post">
+							<form action="workOrderCompleted" ${user == 'david' && order.status != 'completed' ? '' : 'style="display:none;"'} method="post">
 								<input type="hidden" name="orderID" value="${order.orderOfWorkID}">
 								<input type="hidden" name="quoteReqID" value="${quoteReqID}">
 								<input type="text" name="note" placeholder="Comments">
 								<input type="submit" value="Completed" />
 							</form>
+							<form action="showBill" method="post" ${order.status == 'completed' ? '' : 'style="display:none;"'}>
+                    			<input type="hidden" name="quoteReqID" value="${quoteReqID}">
+                    			<input type="submit" value="Show Bill"/>
+                    		</form>
 						</td>
 			</table>
 		</div>

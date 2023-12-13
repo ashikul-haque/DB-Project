@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.io.PrintWriter;
@@ -81,7 +82,7 @@ public class ControlServlet extends HttpServlet {
         		if (session.getAttribute("username").equals("david")) {
         			davidPage(request,response, "");
         		}
-        		if (session.getAttribute("username").equals("")) {
+        		else if (session.getAttribute("username").equals("")) {
         			response.sendRedirect("login.jsp");
         		}
         		else {
@@ -102,6 +103,22 @@ public class ControlServlet extends HttpServlet {
         	case "/workOrderCompleted":
         		workOrderCompleted(request,response);
         		break;
+        	
+        	case "/showBill":
+        		showBill(request,response);
+        		break;	
+        		
+        	case "/payBill":
+        		payBill(request,response);
+        		break;	
+        		
+        	case "/disputeBill":
+        		disputeBill(request,response);
+        		break;	
+        		
+        	case "/changeBill":
+        		changeBill(request,response);
+        		break;	
         		
         	case "/addtree":
         		addTree(request,response);
@@ -309,7 +326,7 @@ public class ControlServlet extends HttpServlet {
 	    	if(session.getAttribute("username").equals("david"))
 	    		request.setAttribute("user", "david");
 	    	else
-	    		request.setAttribute("user", "others");
+	    		request.setAttribute("user", "user");
 	    	
 	    	request.setAttribute("order", order);
 	    	request.setAttribute("quoteReqID", quoteReqID);
@@ -329,27 +346,146 @@ public class ControlServlet extends HttpServlet {
 	        return formattedDate;
 	    }
 	    
+	    private String currentDateTimeString() {
+	        LocalDateTime currentDateTime = LocalDateTime.now();
+
+	        // Define the desired date-time format
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+	        // Format the current date-time
+	        String formattedDateTime = currentDateTime.format(formatter);
+
+	        return formattedDateTime;
+	    }
+	    
 	    private void workOrderCompleted(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
-	    	System.out.println("Work order Completed");
+	    	System.out.println("Work order Completed ");
 	    	String quoteReqID = request.getParameter("quoteReqID");
 	    	String orderID = request.getParameter("orderID");
+	    	String note = request.getParameter("note");
 	    	
-	    	//update orderofwork status
-	    	userDAO.updateOrderofWorkStatus(Integer.parseInt(orderID), "completed");
-	    	
-	    	//update quotereq status
-	    	userDAO.updateQuoteRequestStatus(Integer.parseInt(quoteReqID), "billed");
+	    	System.out.println(quoteReqID+" "+orderID);
 	    	
 	    	double price = userDAO.getPriceForOrderOfWork(Integer.parseInt(orderID));
+	    	System.out.println("Price: "+price);
 	    	String formattedDate = currentDateString();
-	    	Bill bill = new Bill(Integer.parseInt(orderID), price, formattedDate, "pending");
+	    	String status = "pending";
+	    	
+	    	Bill bill = new Bill(Integer.parseInt(quoteReqID), price, formattedDate, status, note);
 	    	userDAO.insert(bill);
 	    	
-	    	request.setAttribute("order", orderID);
+	    	status = "completed";
+	    	if(!userDAO.updateOrder(Integer.parseInt(orderID), status)) {
+	    		System.out.println("order update failed");
+	    	}
+	    	
+	    	status = "billed";
+	    	if(!userDAO.update(Integer.parseInt(quoteReqID), status)){
+	    		System.out.println("quote req update failed");
+	    	}
+	    	
+	    	//davidPage(request,response, "");
+	    	
+	    	if(session.getAttribute("username").equals("david"))
+	    		request.setAttribute("user", "david");
+	    	else
+	    		request.setAttribute("user", "user");
+	    	
+	    	OrderOfWork order = userDAO.getOrderOfWorkDetails(Integer.parseInt(quoteReqID));
+	    	request.setAttribute("order", order);
 	    	request.setAttribute("quoteReqID", quoteReqID);
+	    	
 	    	request.getRequestDispatcher("workOrder.jsp").forward(request, response);
 	    	
 	    }
+	    
+	    private void forwardShowBill(HttpServletRequest request, HttpServletResponse response, String quoteReqID) throws ServletException, IOException, SQLException{
+	    	Bill bill = userDAO.getBill(Integer.parseInt(quoteReqID));
+	    	
+	    	if(session.getAttribute("username").equals("david"))
+	    		request.setAttribute("user", "david");
+	    	else
+	    		request.setAttribute("user", "user");
+	    	
+	    	request.setAttribute("bill", bill);
+	    	
+	    	List<BillDispute> listDisputes = userDAO.listAllDisputes(bill.getBillID());
+	    	request.setAttribute("listDisputes", listDisputes);
+	    	//System.out.println(listDisputes.size());
+	    	
+	    	if(listDisputes.size()>0) {
+	    		request.setAttribute("disputeHistory", 1);
+	    	}
+	    	
+	    	request.getRequestDispatcher("showBill.jsp").forward(request, response);
+	    }
+	    
+	    private void showBill(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Show Bill");
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	forwardShowBill(request, response, quoteReqID);
+	    	
+	    }
+	    
+	    private void payBill(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Pay Bill");
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	String billID = request.getParameter("billID");
+	    	String amount = request.getParameter("amount");
+	    	String status = "paid";
+	    	String changeLog = "Paid $"+ Double.parseDouble(amount);
+	    	
+	    	if(!userDAO.updateBill(Integer.parseInt(billID), status)) {
+	    		System.out.println("bill status update failed");
+	    	}
+	    	if(!userDAO.update(Integer.parseInt(quoteReqID), status)){
+	    		System.out.println("quote req update failed");
+	    	}
+	    	
+	    	BillDispute dispute = new BillDispute(Integer.parseInt(billID), "user", currentDateTimeString(), changeLog);
+	    	userDAO.insert(dispute);
+	    	
+	    	forwardShowBill(request, response, quoteReqID);
+	    	
+	    }
+	    
+	    private void disputeBill(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Dispute Bill");
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	String billID = request.getParameter("billID");
+	    	String changeLog = request.getParameter("note");
+	    	String user = request.getParameter("user");
+	    	String status = "disputed";
+	    	
+	    	if(!userDAO.updateBill(Integer.parseInt(billID), status)) {
+	    		System.out.println("bill status update failed");
+	    	}
+	    	BillDispute dispute = new BillDispute(Integer.parseInt(billID), user, currentDateTimeString(), changeLog);
+	    	userDAO.insert(dispute);
+	    	
+	    	forwardShowBill(request, response, quoteReqID);
+	    	
+	    }
+	    
+	    private void changeBill(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Change Bill");
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	String billID = request.getParameter("billID");
+	    	String amount = request.getParameter("amount");
+	    	Bill bill = userDAO.getBill(Integer.parseInt(quoteReqID));
+	    	String changeLog = "Bill amount was changed from $"+ bill.getAmountDue()+" to $"+Double.parseDouble(amount);
+	    	
+	    	if(!userDAO.updateBill(Integer.parseInt(billID), Double.parseDouble(amount))) {
+	    		System.out.println("bill amount update failed");
+	    	}
+	    	
+	    	BillDispute dispute = new BillDispute(Integer.parseInt(billID), "david", currentDateTimeString(), changeLog);
+	    	userDAO.insert(dispute);
+	    	
+	    	forwardShowBill(request, response, quoteReqID);
+	    	
+	    }
+	    
 	    
 	    private void acceptQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Accept Quote");

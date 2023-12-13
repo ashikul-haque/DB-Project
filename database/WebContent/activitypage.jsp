@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Activity page</title>
+<title>Home page</title>
 </head>
 
 <center><h1>Welcome David!</h1> </center>
@@ -56,6 +56,11 @@
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
                     		<input type="submit" value="Work Order"/>
                     	</form>
+                    	<form action="showBill" method="post" ${users.status == 'billed' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Show Bill"/>
+                    	</form>
+						
                     </td>
             </c:forEach>
         </table>

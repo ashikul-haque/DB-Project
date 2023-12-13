@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Activity page</title>
+<title>Home page</title>
 </head>
 
 <center><h1>Welcome! You have been successfully logged in</h1> </center>
@@ -28,6 +28,7 @@
                 <th>Date Submitted</th>
                 <th>Status</th>
                 <th>Note</th>
+                <th>Action</th>
             </tr>
             <c:forEach var="users" items="${listQuoteReqs}">
                 <tr style="text-align:center">
@@ -43,6 +44,11 @@
 						<form action="workOrder" method="post" ${users.status == 'accepted' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
                     		<input type="submit" value="Work Order"/>
+                    	</form>
+                    	
+                    	<form action="showBill" method="post" ${users.status == 'billed' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Show Bill"/>
                     	</form>
 
                     </td>

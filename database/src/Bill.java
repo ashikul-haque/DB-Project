@@ -1,6 +1,6 @@
 public class Bill {
     private int billID;
-    private int orderOfWorkID;
+    private int quoteReqID;
     private double amountDue;
     private String dateIssued;
     private String status;
@@ -11,33 +11,33 @@ public class Bill {
     }
 
     // Constructor with parameters
-    public Bill(int billID, int orderOfWorkID, double amountDue, String dateIssued, String status, String note) {
+    public Bill(int billID, int quoteReqID, double amountDue, String dateIssued, String status, String note) {
         this.billID = billID;
-        this.orderOfWorkID = orderOfWorkID;
+        this.quoteReqID = quoteReqID;
         this.amountDue = amountDue;
         this.dateIssued = dateIssued;
         this.status = status;
         this.note = note;
     }
     
-    public Bill(int orderOfWorkID, double amountDue, String dateIssued, String status, String note) {
-        this.orderOfWorkID = orderOfWorkID;
+    public Bill(int quoteReqID, double amountDue, String dateIssued, String status, String note) {
+        this.quoteReqID = quoteReqID;
         this.amountDue = amountDue;
         this.dateIssued = dateIssued;
         this.status = status;
         this.note = note;
     }
     
-    public Bill(int billID, int orderOfWorkID, double amountDue, String dateIssued, String status) {
+    public Bill(int billID, int quoteReqID, double amountDue, String dateIssued, String status) {
         this.billID = billID;
-        this.orderOfWorkID = orderOfWorkID;
+        this.quoteReqID = quoteReqID;
         this.amountDue = amountDue;
         this.dateIssued = dateIssued;
         this.status = status;
     }
     
-    public Bill(int orderOfWorkID, double amountDue, String dateIssued, String status) {
-        this.orderOfWorkID = orderOfWorkID;
+    public Bill(int quoteReqID, double amountDue, String dateIssued, String status) {
+        this.quoteReqID = quoteReqID;
         this.amountDue = amountDue;
         this.dateIssued = dateIssued;
         this.status = status;
@@ -55,12 +55,12 @@ public class Bill {
         this.billID = billID;
     }
 
-    public int getOrderOfWorkID() {
-        return orderOfWorkID;
+    public int getquoteReqID() {
+        return quoteReqID;
     }
 
-    public void setOrderOfWorkID(int orderOfWorkID) {
-        this.orderOfWorkID = orderOfWorkID;
+    public void setquoteReqID(int quoteReqID) {
+        this.quoteReqID = quoteReqID;
     }
 
     public double getAmountDue() {
@@ -101,7 +101,7 @@ public class Bill {
     public String toString() {
         return "Bill{" +
                 "billID=" + billID +
-                ", orderOfWorkID=" + orderOfWorkID +
+                ", quoteReqID=" + quoteReqID +
                 ", amountDue=" + amountDue +
                 ", dateIssued='" + dateIssued + '\'' +
                 ", status='" + status + '\'' +
