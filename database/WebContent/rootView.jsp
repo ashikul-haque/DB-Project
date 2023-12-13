@@ -17,28 +17,29 @@
 	</form>
 	<a href="login.jsp"target ="_self" > logout</a><br><br> 
 
-<h1>List all users</h1>
+<h1></h1>
     <div align="center">
-        <table border="1" cellpadding="6">
-            <caption><h2>List of Users</h2></caption>
+    	<table border="1" cellpadding="6">
+            <caption><h2></h2></caption>
             <tr>
-                <th>Email</th>
-                <th>First name</th>
-                <th>Last name</th>
-                <th>Address</th>
-                <th>Password</th>
-                <th>Credit Card</th>
-                <th>Phone</th>
+                <th>Select One</th>
             </tr>
-            <c:forEach var="users" items="${listUser}">
+            <c:forEach var="query" items="${queries}">
                 <tr style="text-align:center">
-                    <td><c:out value="${users.email}" /></td>
-                    <td><c:out value="${users.firstName}" /></td>
-                    <td><c:out value="${users.lastName}" /></td>
-                    <td><c:out value= "${users.address}" /></td>
-                    <td><c:out value="${users.password}" /></td>
-                    <td><c:out value="${users.creditcard}" /></td>
-                    <td><c:out value="${users.phone}"/></td>
+                	<td><form action="runQuery" method="post">
+    					<input type="hidden" name="query" value="${query}">
+    					<input type="submit" value="${query}"/>
+                    </form></td>
+            </c:forEach>
+        </table>
+        <table border="1" cellpadding="6">
+            <caption><h2></h2></caption>
+            <tr>
+                <th>Result</th>
+            </tr>
+            <c:forEach var="item" items="${lists}">
+                <tr style="text-align:center">
+                    <td><c:out value="${item}" /></td>
             </c:forEach>
         </table>
 	</div>

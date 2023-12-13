@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
  
@@ -77,6 +78,8 @@ public class ControlServlet extends HttpServlet {
         	case "/root":
         		rootPage(request,response, "");
         		break;
+        	case "/runQuery":
+        		runQuery(request,response, "");
         	case "/home":
         		//System.out.println(currentUser);
         		if (session.getAttribute("username").equals("david")) {
@@ -189,7 +192,69 @@ public class ControlServlet extends HttpServlet {
 	    	        
 	    private void rootPage(HttpServletRequest request, HttpServletResponse response, String view) throws ServletException, IOException, SQLException{
 	    	System.out.println("root view");
-			request.setAttribute("listUser", userDAO.listAllUsers());
+	    	List<String> queries = Arrays.asList(
+	    		    "Big clients",
+	    		    "Easy clients",
+	    		    "One tree quotes",
+	    		    "Prospective clients",
+	    		    "Highest tree",
+	    		    "Overdue bills",
+	    		    "Bad clients",
+	    		    "Good clients",
+	    		    "Statistics"
+	    		);
+	    	request.setAttribute("queries", queries);
+			//request.setAttribute("lists", userDAO.getTopClients());
+	    	//request.setAttribute("lists", userDAO.getSingleQuoteClients());
+	    	//request.setAttribute("lists", userDAO.getSingleTreeQuoteRequests());
+	    	//request.setAttribute("lists", userDAO.getClientsWithoutOrdersOfWork());
+	    	//request.setAttribute("lists", userDAO.getHighestTrees());
+	    	//request.setAttribute("lists", userDAO.getUnpaidBillsAfterOneWeek());
+	    	//request.setAttribute("lists", userDAO.getClientsWithUnpaidBills());
+	    	//request.setAttribute("lists", userDAO.getClientsPaidWithin24Hours());
+	    	//request.setAttribute("lists", userDAO.getClientSummary());
+	    	request.getRequestDispatcher("rootView.jsp").forward(request, response);
+	    }
+	    
+	    private void runQuery(HttpServletRequest request, HttpServletResponse response, String view) throws ServletException, IOException, SQLException{
+	    	String query = request.getParameter("query");
+	    	System.out.println("runQuery "+ query);
+	    	List<String> queries = Arrays.asList(
+	    		    "Big clients",
+	    		    "Easy clients",
+	    		    "One tree quotes",
+	    		    "Prospective clients",
+	    		    "Highest tree",
+	    		    "Overdue bills",
+	    		    "Bad clients",
+	    		    "Good clients",
+	    		    "Statistics"
+	    		);
+	    	request.setAttribute("queries", queries);
+	    	
+	    	
+	    	
+	    	if ("Big clients".equals(query)) {
+	    	    request.setAttribute("lists", userDAO.getTopClients());
+	    	} else if ("Easy clients".equals(query)) {
+	    	    request.setAttribute("lists", userDAO.getSingleQuoteClients());
+	    	} else if ("One tree quotes".equals(query)) {
+	    	    request.setAttribute("lists", userDAO.getSingleQuoteClients());
+	    	} else if ("Prospective clients".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getClientsWithoutOrdersOfWork());
+	    	} else if ("Highest tree".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getHighestTrees());
+	    	} else if ("Overdue bills".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getUnpaidBillsAfterOneWeek());
+	    	} else if ("Bad clients".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getClientsWithUnpaidBills());
+	    	} else if ("Good clients".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getClientsPaidWithin24Hours());
+	    	} else if ("Statistics".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getClientSummary());
+	    	}
+
+	    	
 	    	request.getRequestDispatcher("rootView.jsp").forward(request, response);
 	    }
 	    

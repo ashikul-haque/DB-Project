@@ -666,8 +666,290 @@ public class userDAO
 
         return billDisputes;
     }
-
     
+    //all backend queries for roots
+    
+    public List<String> getTopClients() throws SQLException {
+        List<String> topClients = new ArrayList<>();
+        String sql = "SELECT C.ClientID, C.FirstName, C.LastName, COUNT(T.TreeID) AS NumberOfTrees, GROUP_CONCAT(QR.QuoteRequestID) AS PaidQuoteRequests " +
+                "FROM Client C " +
+                "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                "JOIN Tree T ON QR.QuoteRequestID = T.QuoteRequestID " +
+                "JOIN Quote Q ON QR.QuoteRequestID = Q.QuoteRequestID " +
+                "WHERE Q.Status = 'accepted' AND QR.Status = 'paid' " +
+                "GROUP BY C.ClientID, C.FirstName, C.LastName " +
+                "ORDER BY NumberOfTrees DESC";
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                	int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    int numberOfTrees = resultSet.getInt("NumberOfTrees");
+                    String client = "ID: "+ clientID + ", Name: " + firstName +" "+lastName+", No of trees: "+numberOfTrees;
+                    topClients.add(client);
+                }
+            }
+        }
+        return topClients;
+    }
+
+    public List<String> getSingleQuoteClients() throws SQLException {
+        List<String> clientsWithSingleAcceptedQuote = new ArrayList<>();
+
+        String sql = "SELECT C.ClientID, C.FirstName, C.LastName " +
+                "FROM Client C " +
+                "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                "JOIN Quote Q ON QR.QuoteRequestID = Q.QuoteRequestID " +
+                "WHERE QR.Status IN ('accepted', 'completed', 'billed', 'paid')  " +
+                "GROUP BY C.ClientID, C.FirstName, C.LastName, QR.QuoteRequestID " +
+                "HAVING COUNT(Q.QuoteRequestID) = 1";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    String clientInfo = "ID: " + clientID + ", Name: " + firstName + " " + lastName;
+                    clientsWithSingleAcceptedQuote.add(clientInfo);
+                }
+            }
+        }
+
+        return clientsWithSingleAcceptedQuote;
+    }
+    
+    public List<Integer> getSingleTreeQuoteRequests() throws SQLException {
+        List<Integer> quoteRequestIDs = new ArrayList<>();
+
+        String sql = "SELECT QR.QuoteRequestID " +
+                "FROM QuoteRequest QR " +
+                "JOIN Tree T ON QR.QuoteRequestID = T.QuoteRequestID " +
+                "WHERE QR.Status IN ('accepted', 'completed', 'billed', 'paid') " +
+                "GROUP BY QR.QuoteRequestID " +
+                "HAVING COUNT(T.TreeID) = 1";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int quoteRequestID = resultSet.getInt("QuoteRequestID");
+                    quoteRequestIDs.add(quoteRequestID);
+                }
+            }
+        }
+
+        return quoteRequestIDs;
+    }
+
+    public List<String> getClientsWithoutOrdersOfWork() throws SQLException {
+        List<String> clientsWithoutOrdersOfWork = new ArrayList<>();
+
+        String sql = "SELECT C.ClientID, C.FirstName, C.LastName " +
+                "FROM Client C " +
+                "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                "LEFT JOIN Quote Q ON QR.QuoteRequestID = Q.QuoteRequestID " +
+                "LEFT JOIN OrderOfWork OOW ON Q.QuoteID = OOW.QuoteID " +
+                "WHERE QR.Status IN ('pending', 'cancelled', 'quoted', 'rejected') AND OOW.OrderOfWorkID IS NULL " +
+                "GROUP BY C.ClientID, C.FirstName, C.LastName";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    String clientInfo = "ID: " + clientID + ", Name: " + firstName + " " + lastName;
+                    clientsWithoutOrdersOfWork.add(clientInfo);
+                }
+            }
+        }
+
+        return clientsWithoutOrdersOfWork;
+    }
+
+    public List<String> getHighestTrees() throws SQLException {
+        List<String> highestTrees = new ArrayList<>();
+
+        String sql = "SELECT T.TreeID, T.Height " +
+                "FROM Tree T " +
+                "JOIN QuoteRequest QR ON QR.QuoteRequestID = T.QuoteRequestID " +
+                "WHERE QR.Status IN ('completed', 'billed', 'paid') " +
+                "AND T.Height = (SELECT MAX(T2.Height) FROM Tree T2 " +
+                "               JOIN QuoteRequest QR2 ON QR2.QuoteRequestID = T2.QuoteRequestID " +
+                "               WHERE QR2.Status IN ('completed', 'billed', 'paid'))";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int treeID = resultSet.getInt("TreeID");
+                    double treeHeight = resultSet.getDouble("Height");
+                    String treeInfo = "TreeID: " + treeID + ", Height: " + treeHeight;
+                    highestTrees.add(treeInfo);
+                }
+            }
+        }
+
+        return highestTrees;
+    }
+
+
+    public List<String> getUnpaidBillsAfterOneWeek() throws SQLException {
+        List<String> unpaidBills = new ArrayList<>();
+
+        String sql = "SELECT B.BillID, B.AmountDue, B.DateIssued " +
+                "FROM Bill B " +
+                "WHERE B.Status IN ('pending', 'disputed') " +
+                "AND DATEDIFF(NOW(), B.DateIssued) > 7";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int billID = resultSet.getInt("BillID");
+                    double amountDue = resultSet.getDouble("AmountDue");
+                    String dateIssued = resultSet.getString("DateIssued");
+                    String billInfo = "BillID: " + billID + ", AmountDue: " + amountDue + ", DateIssued: " + dateIssued;
+                    unpaidBills.add(billInfo);
+                }
+            }
+        }
+
+        return unpaidBills;
+    }
+
+    public List<String> getClientsWithUnpaidBills() throws SQLException {
+        List<String> clientsWithUnpaidBills = new ArrayList<>();
+
+        String sql = "SELECT DISTINCT C.ClientID, C.FirstName, C.LastName " +
+                "FROM Client C " +
+                "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                "LEFT JOIN Bill B ON QR.QuoteRequestID = B.QuoteRequestID " +
+                "WHERE B.Status IN ('pending', 'disputed') AND DATEDIFF(NOW(), B.DateIssued) > 7 " +
+                "AND C.ClientID NOT IN (SELECT DISTINCT C.ClientID " +
+                                       "FROM Client C " +
+                                       "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                                       "JOIN Bill B ON QR.QuoteRequestID = B.QuoteRequestID " +
+                                       "WHERE B.Status = 'paid')";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    String clientInfo = "ID: " + clientID + ", Name: " + firstName + " " + lastName;
+                    clientsWithUnpaidBills.add(clientInfo);
+                }
+            }
+        }
+
+        return clientsWithUnpaidBills;
+    }
+    
+    public List<String> getClientsPaidWithin24Hours() throws SQLException {
+        List<String> clientsPaidWithin24Hours = new ArrayList<>();
+
+        String sql = "SELECT DISTINCT C.ClientID, C.FirstName, C.LastName " +
+                "FROM Client C " +
+                "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                "JOIN Bill B ON QR.QuoteRequestID = B.QuoteRequestID " +
+                "WHERE B.Status = 'paid' AND TIMESTAMPDIFF(HOUR, B.DateIssued, " +
+                "(SELECT MAX(BD.TimeAndDate) FROM BillDispute BD WHERE BD.BillID = B.BillID AND BD.Changelog LIKE '%Paid%')) <= 24 " +
+                "AND C.ClientID NOT IN (SELECT DISTINCT C.ClientID " +
+                                       "FROM Client C " +
+                                       "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                                       "JOIN Bill B ON QR.QuoteRequestID = B.QuoteRequestID " +
+                                       "JOIN BillDispute BD ON B.BillID = BD.BillID " +
+                                       "WHERE (B.Status = 'pending' AND TIMESTAMPDIFF(HOUR, B.DateIssued, NOW()) > 24) " +
+                                       "OR (B.Status = 'paid' AND TIMESTAMPDIFF(HOUR, B.DateIssued, " +
+                                       "(SELECT MAX(BD.TimeAndDate) FROM BillDispute BD WHERE BD.BillID = B.BillID AND BD.Changelog LIKE '%Paid%')) > 24))";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    String clientInfo = "ID: " + clientID + ", Name: " + firstName + " " + lastName;
+                    clientsPaidWithin24Hours.add(clientInfo);
+                }
+            }
+        }
+
+        return clientsPaidWithin24Hours;
+    }
+
+
+    public List<String> getClientSummary() throws SQLException {
+        List<String> clientSummaries = new ArrayList<>();
+
+        String sql = "SELECT " +
+                "C.ClientID, " +
+                "C.FirstName, " +
+                "C.LastName, " +
+                "SUM(TotalTrees) AS TotalTrees, " +
+                "IFNULL(SUM(CASE WHEN B.Status = 'paid' THEN B.AmountDue ELSE 0 END), 0) AS TotalPaidAmount, " +
+                "IFNULL(SUM(CASE WHEN B.Status IN ('pending', 'disputed') THEN B.AmountDue ELSE 0 END), 0) AS TotalDueAmount " +
+                "FROM " +
+                "Client C " +
+                "LEFT JOIN (" +
+                "    SELECT QR.ClientID, QR.QuoteRequestID, COUNT(T.TreeID) AS TotalTrees " +
+                "    FROM QuoteRequest QR " +
+                "    LEFT JOIN Tree T ON QR.QuoteRequestID = T.QuoteRequestID " +
+                "    WHERE QR.Status IN ('completed', 'paid', 'billed') " +
+                "    GROUP BY QR.ClientID, QR.QuoteRequestID" +
+                ") AS TreeCounts ON C.ClientID = TreeCounts.ClientID " +
+                "LEFT JOIN Bill B ON TreeCounts.QuoteRequestID = B.QuoteRequestID " +
+                "GROUP BY C.ClientID, C.FirstName, C.LastName";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    int totalTrees = resultSet.getInt("TotalTrees");
+                    double totalPaidAmount = resultSet.getDouble("TotalPaidAmount");
+                    double totalDueAmount = resultSet.getDouble("TotalDueAmount");
+
+                    String clientSummary = "ID: " + clientID +
+                            ", Name: " + firstName + " " + lastName +
+                            ", Total Trees: " + totalTrees +
+                            ", Total Paid Amount: " + totalPaidAmount +
+                            ", Total Due Amount: " + totalDueAmount;
+
+                    clientSummaries.add(clientSummary);
+                }
+            }
+        }
+
+        return clientSummaries;
+    }
+
+
+
+
+
+
+
     
     
     public boolean checkEmail(String email) throws SQLException {
