@@ -49,7 +49,12 @@
                     	</form>
                     	<form action="treeDetails" method="post" ${users.status == 'pending' ? '' : 'style="display:none;"'}>
                     		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="hidden" name="source" value="home">
                     		<input type="submit" value="Tree Details"/>
+                    	</form>
+                    	<form action="workOrder" method="post" ${users.status == 'accepted' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Work Order"/>
                     	</form>
                     </td>
             </c:forEach>

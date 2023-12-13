@@ -7,6 +7,7 @@ public class Quote {
     private String dateSubmitted;
     private String status;
     private String note;
+    private int orderId;
 
     // Default constructor
     public Quote() {
@@ -44,6 +45,14 @@ public class Quote {
 
     public void setQuoteID(Integer quoteID) {
         this.quoteID = quoteID;
+    }
+    
+    public Integer getOrderID() {
+        return orderId;
+    }
+
+    public void setOrderID(Integer quoteID) {
+        this.orderId = quoteID;
     }
 
     public Integer getQuoteRequestID() {

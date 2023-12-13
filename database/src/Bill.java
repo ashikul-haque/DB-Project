@@ -20,6 +20,14 @@ public class Bill {
         this.note = note;
     }
     
+    public Bill(int orderOfWorkID, double amountDue, String dateIssued, String status, String note) {
+        this.orderOfWorkID = orderOfWorkID;
+        this.amountDue = amountDue;
+        this.dateIssued = dateIssued;
+        this.status = status;
+        this.note = note;
+    }
+    
     public Bill(int billID, int orderOfWorkID, double amountDue, String dateIssued, String status) {
         this.billID = billID;
         this.orderOfWorkID = orderOfWorkID;
@@ -27,6 +35,15 @@ public class Bill {
         this.dateIssued = dateIssued;
         this.status = status;
     }
+    
+    public Bill(int orderOfWorkID, double amountDue, String dateIssued, String status) {
+        this.orderOfWorkID = orderOfWorkID;
+        this.amountDue = amountDue;
+        this.dateIssued = dateIssued;
+        this.status = status;
+    }
+    
+    
 
     // Getters and Setters
 

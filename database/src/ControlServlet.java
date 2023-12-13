@@ -88,9 +88,21 @@ public class ControlServlet extends HttpServlet {
         			userPage(request,response, "");
         		}
         		break;
+        	
+        	case "/davidHome":
+        		davidPage(request,response, "");
+        	
+        	case "/userHome":
+        		userPage(request,response, "");
+        		
         	case "/logout":
         		logout(request,response);
         		break;
+        		
+        	case "/workOrderCompleted":
+        		workOrderCompleted(request,response);
+        		break;
+        		
         	case "/addtree":
         		addTree(request,response);
         		break;
@@ -113,6 +125,10 @@ public class ControlServlet extends HttpServlet {
         		
         	case "/acceptQuote":
         		acceptQuote(request,response);
+        		break;
+        	
+        	case "/workOrder":
+        		workOrder(request,response);
         		break;
         		
         	case "/rejectQuote":
@@ -177,14 +193,10 @@ public class ControlServlet extends HttpServlet {
 	    	request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
 	    }
 	    
-	    private synchronized int getNextQuoteRequestId() {
-	        return nextQuoteRequestId++;
-	    }
-	    
 	    int quoteReqID = -1;
 	    private void requestQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Request Quote");
-	    	quoteReqID = getNextQuoteRequestId();
+	    	quoteReqID = userDAO.getNextQuoteRequestId();
 	    	request.setAttribute("quoteReqID", quoteReqID);
 	    	request.setAttribute("treeAddStatus", "");
 	    	request.getRequestDispatcher("requestquote.jsp").forward(request, response);
@@ -254,7 +266,7 @@ public class ControlServlet extends HttpServlet {
 	        String currentDateAsString = currentDate.format(formatter);
 	    	String status = "pending";
 	    	String note = request.getParameter("note");
-	    	System.out.println(note);
+	    	//System.out.println(note);
 	    	
 	    	
 	    	
@@ -288,21 +300,78 @@ public class ControlServlet extends HttpServlet {
 	    	
 	    }
 	    
+	    private void workOrder(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Work order");
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	
+	    	OrderOfWork order = userDAO.getOrderOfWorkDetails(Integer.parseInt(quoteReqID));
+	    	
+	    	if(session.getAttribute("username").equals("david"))
+	    		request.setAttribute("user", "david");
+	    	else
+	    		request.setAttribute("user", "others");
+	    	
+	    	request.setAttribute("order", order);
+	    	request.setAttribute("quoteReqID", quoteReqID);
+	    	request.getRequestDispatcher("workOrder.jsp").forward(request, response);
+	    	
+	    }
+	    
+	    private String currentDateString() {
+	    	LocalDate currentDate = LocalDate.now();
+
+	        // Define the desired date format
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	        // Format the current date
+	        String formattedDate = currentDate.format(formatter);
+	        
+	        return formattedDate;
+	    }
+	    
+	    private void workOrderCompleted(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
+	    	System.out.println("Work order Completed");
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	String orderID = request.getParameter("orderID");
+	    	
+	    	//update orderofwork status
+	    	userDAO.updateOrderofWorkStatus(Integer.parseInt(orderID), "completed");
+	    	
+	    	//update quotereq status
+	    	userDAO.updateQuoteRequestStatus(Integer.parseInt(quoteReqID), "billed");
+	    	
+	    	double price = userDAO.getPriceForOrderOfWork(Integer.parseInt(orderID));
+	    	String formattedDate = currentDateString();
+	    	Bill bill = new Bill(Integer.parseInt(orderID), price, formattedDate, "pending");
+	    	userDAO.insert(bill);
+	    	
+	    	request.setAttribute("order", orderID);
+	    	request.setAttribute("quoteReqID", quoteReqID);
+	    	request.getRequestDispatcher("workOrder.jsp").forward(request, response);
+	    	
+	    }
+	    
 	    private void acceptQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Accept Quote");
 	    	String quoteID = request.getParameter("quoteID");
 	    	
 	    	
-	    	//change status from pending to reject
+	    	//change status from pending to accept
 	    	String status = "accepted";
 	    	if(userDAO.updateQuote(Integer.parseInt(quoteID), status)) {
 	    		userDAO.updateQuoteReqStatus(Integer.parseInt(quoteID), status);
+	    		
+		    	String formattedDate = currentDateString();
+		    	OrderOfWork order = new OrderOfWork(Integer.parseInt(quoteID), formattedDate, "in progress");
+		    	
+		    	userDAO.insert(order);
 	    		userPage(request,response, "");
 	    	}
 	    	else {
 	    		System.out.println("Update failed for acceptQuote");
 	    		userPage(request,response, "");
 	    	}
+	    	
 	    }
 	    
 	    private void rejectQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
@@ -348,9 +417,11 @@ public class ControlServlet extends HttpServlet {
 	    private void treeDetails(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Tree details view");
 	    	
+	    	String source = request.getParameter("source");
 	    	String quoteReqID = request.getParameter("quoteReqID");
 			request.setAttribute("listTrees", userDAO.listTrees(Integer.parseInt(quoteReqID)));
 			request.setAttribute("quoteReqID", quoteReqID);
+			request.setAttribute("source", source);
 			
 	    	request.getRequestDispatcher("treedetails.jsp").forward(request, response);
 	    }
@@ -359,15 +430,13 @@ public class ControlServlet extends HttpServlet {
 	    	System.out.println("Generate Quote");
 	    	String quoteReqID = request.getParameter("quoteReqID");
 	    	
-	    	
-	    	
 	    	String status = "quoted";
 	    	if(!userDAO.update(Integer.parseInt(quoteReqID), status)) {
 	    		System.out.println("Update failed for giveQuote");
 	    	}
 	    	
-	    	
 	    	System.out.println("Update success for giveQuote");
+	    	
 	    	List<Quote> quotes = userDAO.listQuoteReqQuotes(Integer.parseInt(quoteReqID));
 	    	request.setAttribute("quoteRequestID", quoteReqID);
 	    	

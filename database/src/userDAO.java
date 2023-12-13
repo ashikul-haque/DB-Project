@@ -143,6 +143,31 @@ public class userDAO
         preparedStatement.close();
     }
     
+    public void insert(OrderOfWork order) throws SQLException {
+    	connect_func();         
+		String sql = "INSERT INTO OrderOfWork (QuoteID, DateCreated, Status) VALUES (?, ?, ?)";
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setInt(1, order.getQuoteID());
+			preparedStatement.setString(2, order.getDateCreated());
+			preparedStatement.setString(3, order.getStatus());
+
+		preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+    
+    public void insert(Bill bill) throws SQLException {
+    	connect_func();         
+		String sql = "INSERT INTO Bill (OrderOfWorkID, DateIssued, Status) VALUES (?, ?, ?)";
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setInt(1, bill.getOrderOfWorkID());
+			preparedStatement.setString(2, bill.getDateIssued());
+			preparedStatement.setString(3, bill.getStatus());
+
+		preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+    
+    
     public void insert(QuoteRequest quoteReq) throws SQLException {
     	connect_func("root","pass1234");         
 		String sql = "INSERT INTO QuoteRequest (QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote) values (?, ?, ?, ?, ?)";
@@ -245,6 +270,44 @@ public class userDAO
 
         return rowUpdated;
     }
+    
+    public boolean updateQuoteRequestStatus(int quoteRequestID, String status) throws SQLException {
+        String sqlUpdate = "UPDATE QuoteRequest SET Status=? WHERE QuoteRequestID = ?";
+
+        connect_func();
+
+        // Update the row in QuoteRequest with the new Status
+        preparedStatement = connect.prepareStatement(sqlUpdate);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, quoteRequestID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+
+        // Close resources
+        resultSet.close();
+        preparedStatement.close();
+
+        return rowUpdated;
+    }
+    
+    public boolean updateOrderofWorkStatus(int orderID, String status) throws SQLException {
+        String sqlUpdate = "UPDATE OrderofWork SET Status=? WHERE OrderofWorkID = ?";
+
+        connect_func();
+
+        // Update the row in QuoteRequest with the new Status
+        preparedStatement = connect.prepareStatement(sqlUpdate);
+        preparedStatement.setString(1, status);
+        preparedStatement.setInt(2, orderID);
+
+        boolean rowUpdated = preparedStatement.executeUpdate() > 0;
+
+        // Close resources
+        resultSet.close();
+        preparedStatement.close();
+
+        return rowUpdated;
+    }
 
 
     
@@ -295,6 +358,41 @@ public class userDAO
 
         return rowUpdated;
     }
+    
+    public OrderOfWork getOrderOfWorkDetails(int quoteRequestID) throws SQLException {
+        OrderOfWork orderOfWork = null;
+        String sql = "SELECT ow.*, q.WorkPeriodStartDate AS QuoteStartDate, q.WorkPeriodEndDate AS QuoteEndDate " +
+                     "FROM OrderOfWork ow " +
+                     "INNER JOIN Quote q ON ow.QuoteID = q.QuoteID " +
+                     "WHERE q.QuoteRequestID = ? AND q.Status = 'accepted'";
+        
+        connect_func();
+        
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            preparedStatement.setInt(1, quoteRequestID);
+            
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    Integer orderOfWorkID = resultSet.getInt("OrderOfWorkID");
+                    // Add other fields as needed
+                    String startDate = resultSet.getString("QuoteStartDate");
+                    String endDate = resultSet.getString("QuoteEndDate");
+                    String dateCreated = resultSet.getString("DateCreated");
+                    String status = resultSet.getString("Status");
+                    
+                    // Create the OrderOfWork object
+                    orderOfWork = new OrderOfWork(orderOfWorkID, startDate, endDate, dateCreated, status);
+                }
+            }
+        } finally {
+            disconnect();
+        }
+        
+        return orderOfWork;
+    }
+
+
+
 
     
     public List<QuoteRequest> listAllQuoteReqs() throws SQLException {
@@ -364,6 +462,7 @@ public class userDAO
         return listUser;
     }
     
+    
     public List<Quote> listQuoteReqQuotes(Integer QuoteRequestID) throws SQLException {
     	//System.out.println("in function");
         List<Quote> listUser = new ArrayList<Quote>();        
@@ -396,6 +495,47 @@ public class userDAO
         resultSet.close();
         disconnect();        
         return listUser;
+    }
+    
+    public int getNextQuoteRequestId() throws SQLException {
+        int nextQuoteRequestId = 0;
+
+        String sql = "SELECT MAX(QuoteRequestID) + 1 AS NextQuoteRequestId FROM QuoteRequest";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            if (resultSet.next()) {
+                nextQuoteRequestId = resultSet.getInt("NextQuoteRequestId");
+            }
+        }
+
+        return nextQuoteRequestId;
+    }
+    
+    public double getPriceForOrderOfWork(int orderofworkID) throws SQLException {
+        double price = 0.0;
+
+        String sql = "SELECT q.Price " +
+                     "FROM Quote q " +
+                     "INNER JOIN OrderOfWork o ON q.QuoteID = o.QuoteID " +
+                     "WHERE o.OrderOfWorkID = ?";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            preparedStatement.setInt(1, orderofworkID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    price = resultSet.getDouble("Price");
+                }
+            }
+        }
+
+        return price;
     }
     
     
@@ -573,7 +713,7 @@ public class userDAO
         	    "QuoteRequestID INT PRIMARY KEY," +
         	    "ClientID INT," +
         	    "DateSubmitted DATE," +
-        	    "Status ENUM('pending', 'accepted', 'rejected', 'quoted', 'cancelled')," +
+        	    "Status ENUM('pending', 'accepted', 'rejected', 'quoted', 'cancelled', 'completed', 'billed')," +
         	    "ClientNote TEXT," +
         	    "FOREIGN KEY (ClientID) REFERENCES Client(ClientID));"
         	);
@@ -584,9 +724,9 @@ public class userDAO
         	    "TreeID INT AUTO_INCREMENT PRIMARY KEY," +
         	    "QuoteRequestID INT," +
         	    "Size VARCHAR(255)," +
-        	    "Height FLOAT," +
+        	    "Height VARCHAR(255)," +
         	    "Location VARCHAR(255)," +
-        	    "DistanceToHouse FLOAT," +
+        	    "DistanceToHouse VARCHAR(255)," +
         	    "Picture1 BLOB," +
         	    "Picture2 BLOB," +
         	    "Picture3 BLOB," +
@@ -648,7 +788,7 @@ public class userDAO
         
         String clientDataGeneration = (
         	    "INSERT INTO Client (ClientID, FirstName, LastName, Address, CreditCardInformation, PhoneNumber, Email, Password) VALUES " +
-        	    "(101, 'test', 'test', '123 Main St, Cityville', '**** **** **** 1234', '+1234567890', 'test@email.com', 'pass1234'), " +
+        	    "(101, 'test', 'test', '123 Main St, Cityville', '**** **** **** 1234', '+1234567890', 'test', 'pass1234'), " +
         	    "(102, 'Jane', 'Smith', '456 Oak St, Townsville', '**** **** **** 5678', '+9876543210', 'jane.smith@email.com', 'pass456'), " +
         	    "(103, 'Alice', 'Johnson', '789 Pine St, Villagetown', '**** **** **** 9876', '+1122334455', 'alice.johnson@email.com', 'secretPass'), " +
         	    "(104, 'Bob', 'Williams', '567 Elm St, Countryside', '**** **** **** 3456', '+4455667788', 'bob.williams@email.com', 'securePass123'), " +

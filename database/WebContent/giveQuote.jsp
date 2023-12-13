@@ -24,6 +24,7 @@
                 <th>Submission Date</th>
                 <th>Status</th>
                 <th>Note</th>
+                <th>Action</th>
             </tr>
 				<c:forEach var="users" items="${listQuotes}">
 					<tr style="text-align: center">
@@ -33,6 +34,7 @@
 						<td><c:out value="${users.dateSubmitted}" /></td>
 						<td><c:out value="${users.status}" /></td>
 						<td><c:out value="${users.note}" /></td>
+						
 						<td>
 							<form action="acceptQuote"
 								${showReject == 0 && users.status == 'pending' ? '' : 'style="display:none;"'} method="post">

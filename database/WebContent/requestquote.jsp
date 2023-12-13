@@ -8,7 +8,14 @@
 <title>Request Quote</title>
 </head>
 
-<center><h1>Request Quote</h1> </center>
+<center>
+<form action = "userHome">
+	<input type = "submit" value = "Return to Homepage"/>
+</form>
+
+<h1>Request Quote</h1> 
+</center>
+
 <center><h2> ${treeAddStatus}</h2></center>
 <body>
 

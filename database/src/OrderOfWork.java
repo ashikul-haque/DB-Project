@@ -3,6 +3,8 @@ public class OrderOfWork {
     private int quoteID;
     private String dateCreated;
     private String status;
+    private String startDate;
+    private String endDate;
 
     // Default constructor
     public OrderOfWork() {
@@ -12,6 +14,20 @@ public class OrderOfWork {
     public OrderOfWork(int orderOfWorkID, int quoteID, String dateCreated, String status) {
         this.orderOfWorkID = orderOfWorkID;
         this.quoteID = quoteID;
+        this.dateCreated = dateCreated;
+        this.status = status;
+    }
+    
+    public OrderOfWork(int quoteID, String dateCreated, String status) {
+        this.quoteID = quoteID;
+        this.dateCreated = dateCreated;
+        this.status = status;
+    }
+    
+    public OrderOfWork(int orderOfWorkID, String startDate, String endDate, String dateCreated, String status) {
+    	this.orderOfWorkID = orderOfWorkID;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.dateCreated = dateCreated;
         this.status = status;
     }
@@ -48,6 +64,22 @@ public class OrderOfWork {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+    
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String StartDate) {
+        this.startDate = StartDate;
+    }
+    
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     // Override toString() for a string representation of the object

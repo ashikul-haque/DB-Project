@@ -22,7 +22,7 @@
 		 
 		 <div align="center">
  
-        <table border="1" cellpadding="6">
+        <table border="1">
             <caption><h1>List of Submitted QuoteReqs</h1></caption>
             <tr>
                 <th>Date Submitted</th>
@@ -35,16 +35,21 @@
                     <td><c:out value="${users.status}" /></td>
                     <td><c:out value="${users.clientNote}"/></td>
                     <td>
-                    	<form action="giveQuote" method="post" ${users.status == 'quoted' ? '' : 'style="display:none;"'}>
+                    	<form action="giveQuote" method="post" ${users.status == 'cancelled' || users.status == 'quoted' ? '' : 'style="display:none;"'}>
     						<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
     						<input type="submit" value="Show Quotes"/>
 						</form>
+						
+						<form action="workOrder" method="post" ${users.status == 'accepted' ? '' : 'style="display:none;"'}>
+                    		<input type="hidden" name="quoteReqID" value="${users.quoteRequestID}">
+                    		<input type="submit" value="Work Order"/>
+                    	</form>
 
                     </td>
             </c:forEach>
         </table>
 	</div>
 		 
-		 </center>
+	</center>
 	</body>
 </html>
