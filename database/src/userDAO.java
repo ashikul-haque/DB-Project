@@ -999,6 +999,32 @@ public class userDAO
 
 
 
+    public List<String> getTreeWorkDates() throws SQLException {
+        List<String> treeWorkDates = new ArrayList<>();
+
+        String sql = "SELECT T.TreeID, QW.WorkPeriodEndDate " +
+                "FROM Tree T " +
+                "JOIN Quote Q ON T.QuoteRequestID = Q.QuoteRequestID " +
+                "JOIN OrderOfWork QW ON Q.QuoteID = QW.QuoteID " +
+                "JOIN QuoteRequest QR ON Q.QuoteRequestID = QR.QuoteRequestID " +
+                "WHERE QR.Status IN ('completed', 'billed', 'paid')";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int treeID = resultSet.getInt("TreeID");
+                    String dateCreated = resultSet.getString("WorkPeriodEndDate");
+
+                    String treeWorkDateInfo = "TreeID: " + treeID + ", Work Date: " + dateCreated.toString();
+                    treeWorkDates.add(treeWorkDateInfo);
+                }
+            }
+        }
+
+        return treeWorkDates;
+    }
 
 
 
