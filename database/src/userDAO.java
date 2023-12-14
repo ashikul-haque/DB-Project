@@ -678,6 +678,41 @@ public class userDAO
                 "JOIN Quote Q ON QR.QuoteRequestID = Q.QuoteRequestID " +
                 "WHERE Q.Status = 'accepted' AND QR.Status = 'paid' " +
                 "GROUP BY C.ClientID, C.FirstName, C.LastName " +
+                "HAVING NumberOfTrees = (SELECT MAX(TreeCount) FROM (SELECT COUNT(T2.TreeID) AS TreeCount " +
+                "FROM Client C2 " +
+                "JOIN QuoteRequest QR2 ON C2.ClientID = QR2.ClientID " +
+                "JOIN Tree T2 ON QR2.QuoteRequestID = T2.QuoteRequestID " +
+                "JOIN Quote Q2 ON QR2.QuoteRequestID = Q2.QuoteRequestID " +
+                "WHERE Q2.Status = 'accepted' AND QR2.Status = 'paid' " +
+                "GROUP BY C2.ClientID) AS TreeCounts)";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    int clientID = resultSet.getInt("ClientID");
+                    String firstName = resultSet.getString("FirstName");
+                    String lastName = resultSet.getString("LastName");
+                    int numberOfTrees = resultSet.getInt("NumberOfTrees");
+                    String client = "ID: " + clientID + ", Name: " + firstName + " " + lastName + ", No of trees: " + numberOfTrees;
+                    topClients.add(client);
+                }
+            }
+        }
+        return topClients;
+    }
+
+    
+    /*public List<String> getTopClients() throws SQLException {
+        List<String> topClients = new ArrayList<>();
+        String sql = "SELECT C.ClientID, C.FirstName, C.LastName, COUNT(T.TreeID) AS NumberOfTrees, GROUP_CONCAT(QR.QuoteRequestID) AS PaidQuoteRequests " +
+                "FROM Client C " +
+                "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
+                "JOIN Tree T ON QR.QuoteRequestID = T.QuoteRequestID " +
+                "JOIN Quote Q ON QR.QuoteRequestID = Q.QuoteRequestID " +
+                "WHERE Q.Status = 'accepted' AND QR.Status = 'paid' " +
+                "GROUP BY C.ClientID, C.FirstName, C.LastName " +
                 "ORDER BY NumberOfTrees DESC";
         connect_func();
 
@@ -694,7 +729,7 @@ public class userDAO
             }
         }
         return topClients;
-    }
+    }*/
 
     public List<String> getSingleQuoteClients() throws SQLException {
         List<String> clientsWithSingleAcceptedQuote = new ArrayList<>();
@@ -1155,16 +1190,12 @@ public class userDAO
         
         String quoteRequestDataGeneration = (
         	    "INSERT INTO QuoteRequest (QuoteRequestID, ClientID, DateSubmitted, Status, ClientNote) VALUES " +
-        	    "(1, 101, '2023-10-01', 'accepted', 'Client needs a quote for tree trimming.'), " +
-        	    "(2, 102, '2023-10-02', 'pending', 'Requesting quote for tree removal.'), " +
-        	    "(3, 103, '2023-10-03', 'accepted', 'Client approved the initial quote.'), " +
-        	    "(4, 104, '2023-10-04', 'pending', 'Interested in tree pruning services.'), " +
+        	    "(1, 101, '2023-10-01', 'paid', 'Client needs a quote for tree trimming.'), " +
+        	    "(2, 102, '2023-10-02', 'paid', 'Requesting quote for tree removal.'), " +
+        	    "(3, 103, '2023-10-03', 'billed', 'Client approved the initial quote.'), " +
+        	    "(4, 104, '2023-10-04', 'accepted', 'Interested in tree pruning services.'), " +
         	    "(5, 105, '2023-10-05', 'pending', 'Client requires a quote for tree maintenance.'), " +
-        	    "(6, 106, '2023-10-06', 'accepted', 'Client accepted the initial quote for tree removal.'), " +
-        	    "(7, 107, '2023-10-07', 'pending', 'Requesting quote for tree trimming in schoolyard.'), " +
-        	    "(8, 108, '2023-10-08', 'pending', 'Client needs a quote for tree pruning in the playground.'), " +
-        	    "(9, 109, '2023-10-09', 'accepted', 'Client approved the quote for tree maintenance.'), " +
-        	    "(10, 110, '2023-10-10', 'pending', 'Interested in tree trimming services for the backyard.');"
+        	    "(6, 106, '2023-10-06', 'quoted', 'Client accepted the initial quote for tree removal.');"
         	);
 
         
@@ -1181,15 +1212,7 @@ public class userDAO
         	    "(9, 6, 'Small', 3.5, 'Front Yard', 7.0, 'tree9_pic1.jpg', 'tree9_pic2.jpg', 'tree9_pic3.jpg'), " +
         	    "(10, 6, 'Medium', 5.8, 'Back Yard', 14.5, 'tree10_pic1.jpg', 'tree10_pic2.jpg', 'tree10_pic3.jpg'), " +
         	    "(11, 6, 'Large', 10.0, 'Grove', 25.0, 'tree11_pic1.jpg', 'tree11_pic2.jpg', 'tree11_pic3.jpg'), " +
-        	    "(12, 6, 'Medium', 6.5, 'Riverbank', 13.0, 'tree12_pic1.jpg', 'tree12_pic2.jpg', 'tree12_pic3.jpg'), " +
-        	    "(13, 7, 'Small', 4.2, 'Mountain', 6.0, 'tree13_pic1.jpg', 'tree13_pic2.jpg', 'tree13_pic3.jpg'), " +
-        	    "(14, 7, 'Large', 8.5, 'Oceanfront', 22.5, 'tree14_pic1.jpg', 'tree14_pic2.jpg', 'tree14_pic3.jpg'), " +
-        	    "(15, 8, 'Medium', 5.0, 'Hillside', 11.0, 'tree15_pic1.jpg', 'tree15_pic2.jpg', 'tree15_pic3.jpg'), " +
-        	    "(16, 8, 'Large', 8.0, 'Back Yard', 15.0, 'tree16_pic1.jpg', 'tree16_pic2.jpg', 'tree16_pic3.jpg'), " +
-        	    "(17, 8, 'Small', 3.0, 'Side Yard', 5.5, 'tree17_pic1.jpg', 'tree17_pic2.jpg', 'tree17_pic3.jpg'), " +
-        	    "(18, 9, 'Medium', 6.0, 'Garden', 8.0, 'tree18_pic1.jpg', 'tree18_pic2.jpg', 'tree18_pic3.jpg'), " +
-        	    "(19, 10, 'Large', 7.5, 'Park', 20.0, 'tree19_pic1.jpg', 'tree19_pic2.jpg', 'tree19_pic3.jpg'), " +
-        	    "(20, 10, 'Small', 4.0, 'Street', 3.5, 'tree20_pic1.jpg', 'tree20_pic2.jpg', 'tree20_pic3.jpg');"
+        	    "(12, 6, 'Medium', 6.5, 'Riverbank', 13.0, 'tree12_pic1.jpg', 'tree12_pic2.jpg', 'tree12_pic3.jpg');"
         	);
 
 
@@ -1204,59 +1227,38 @@ public class userDAO
         	    "(11, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'accepted', 'Updated quote for tree trimming.'), " +
         	    "(2, 2, 1200.00, '2023-10-08', '2023-10-15', '2023-10-06', 'accepted', 'Quote for tree removal approved.'), " +
         	    "(3, 3, 300.00, '2023-10-12', '2023-10-18', '2023-10-09', 'accepted', 'Finalized quote for tree pruning.'), " +
-        	    "(4, 4, 150.00, '2023-10-15', '2023-10-20', '2023-10-11', 'pending', 'Initial quote for tree pruning.'), " +
-        	    "(5, 5, 250.00, '2023-10-18', '2023-10-25', '2023-10-14', 'pending', 'Quote for tree maintenance services.'), " +
-        	    "(6, 6, 800.00, '2023-10-20', '2023-10-28', '2023-10-16', 'accepted', 'Quote for tree removal accepted.'), " +
-        	    "(7, 7, 400.00, '2023-10-25', '2023-10-30', '2023-10-19', 'pending', 'Initial quote for tree trimming in schoolyard.'), " +
-        	    "(8, 8, 600.00, '2023-10-28', '2023-11-05', '2023-10-22', 'pending', 'Quote for tree pruning in the playground.'), " +
-        	    "(9, 9, 200.00, '2023-10-30', '2023-11-08', '2023-10-25', 'accepted', 'Finalized quote for tree maintenance.'), " +
-        	    "(10, 10, 350.00, '2023-11-02', '2023-11-10', '2023-10-28', 'pending', 'Quote for tree trimming in the backyard.');"
+        	    "(4, 4, 150.00, '2023-10-15', '2023-10-20', '2023-10-11', 'rejected', 'Initial quote for tree pruning.'), " +
+        	    "(7, 4, 400.00, '2023-10-25', '2023-10-30', '2023-10-19', 'accepted', 'Initial quote for tree trimming in schoolyard.'), " +
+        	    "(6, 6, 800.00, '2023-10-20', '2023-10-28', '2023-10-16', 'pending', 'Quote for tree removal accepted.');"
         	);
 
 
         
         String orderOfWorkDataGeneration = (
         	    "INSERT INTO OrderOfWork (OrderOfWorkID, QuoteID, DateCreated, Status) VALUES " +
-        	    "(1, 11, '2023-10-10', 'in progress'), " +
+        	    "(1, 11, '2023-10-10', 'completed'), " +
         	    "(2, 2, '2023-10-15', 'completed'), " +
-        	    "(3, 3, '2023-10-18', 'in progress'), " +
-        	    "(4, 4, '2023-10-20', 'in progress'), " +
-        	    "(5, 5, '2023-10-25', 'in progress'), " +
-        	    "(6, 6, '2023-10-28', 'completed'), " +
-        	    "(7, 7, '2023-10-30', 'in progress'), " +
-        	    "(8, 8, '2023-11-02', 'in progress'), " +
-        	    "(9, 9, '2023-11-05', 'completed'), " +
-        	    "(10, 10, '2023-11-08', 'in progress');"
+        	    "(3, 3, '2023-10-18', 'completed'), " +
+        	    "(4, 7, '2023-10-20', 'completed');"
         	);
 
 
         
         String billDataGeneration = (
         	    "INSERT INTO Bill (BillID, QuoteRequestID, AmountDue, DateIssued, Status, Note) VALUES " +
-        	    "(2, 2, 1200.00, '2023-10-20', 'paid', 'Payment received for tree removal.'), " +
-        	    "(3, 3, 300.00, '2023-10-25', 'pending', 'Amount due for tree pruning work.'), " +
-        	    "(4, 4, 150.00, '2023-10-28', 'pending', 'Amount due for tree pruning work.'), " +
-        	    "(5, 5, 250.00, '2023-11-02', 'pending', 'Amount due for tree maintenance work.'), " +
-        	    "(6, 6, 800.00, '2023-11-08', 'paid', 'Payment received for tree removal.'), " +
-        	    "(7, 7, 400.00, '2023-11-12', 'pending', 'Amount due for tree trimming work in schoolyard.'), " +
-        	    "(8, 8, 600.00, '2023-11-18', 'pending', 'Amount due for tree pruning work in the playground.'), " +
-        	    "(9, 9, 200.00, '2023-11-22', 'paid', 'Payment received for tree maintenance work.'), " +
-        	    "(10, 10, 350.00, '2023-11-28', 'pending', 'Amount due for tree trimming work in the backyard.');"
+        	    "(1, 1, 250.00, '2023-10-20', 'paid', 'Work done.'), " +
+        	    "(2, 2, 1200.00, '2023-10-20', 'paid', 'Work done.'), " +
+        	    "(3, 3, 300.00, '2023-10-25', 'disputed', 'Work done.'), " +
+        	    "(4, 4, 150.00, '2023-10-28', 'pending', 'Work done.');"
         	);
 
 
         
         String billDisputeDataGeneration = (
         	    "INSERT INTO BillDispute (DisputeID, BillID, User, TimeAndDate, Changelog) VALUES " +
-        	    "(2, 2, 'user', '2023-10-28 10:45:00', 'Client queries the additional charge for tree pruning.'), " +
-        	    "(3, 3, 'user', '2023-11-05 12:15:00', 'Client disputes the tree maintenance charge.'), " +
-        	    "(4, 4, 'user', '2023-11-12 14:00:00', 'Client disputes the schoolyard tree trimming charge.'), " +
-        	    "(5, 5, 'user', '2023-11-30 09:30:00', 'Client queries the tree trimming charge for the backyard.'), " +
-        	    "(6, 6, 'user', '2023-10-22 11:00:00', 'Client disputes the tree removal charge.'), " +
-        	    "(7, 7, 'user', '2023-10-30 13:45:00', 'Client queries the additional charge for tree pruning.'), " +
-        	    "(8, 8, 'user', '2023-11-10 16:20:00', 'Client disputes the tree removal charge.'), " +
-        	    "(9, 9, 'user', '2023-11-18 09:00:00', 'Client queries the additional charge for tree pruning.'), " +
-        	    "(10, 10, 'user', '2023-11-25 14:30:00', 'Client disputes the tree maintenance charge.');"
+        	    "(1, 2, 'user', '2023-10-25 10:45:00', 'paid'), " +
+        	    "(2, 2, 'user', '2023-10-20 10:45:00', 'paid'), " +
+        	    "(3, 3, 'user', '2023-11-05 12:15:00', 'Client disputes the tree maintenance charge.');"
         	);
 
 
