@@ -10,11 +10,7 @@
 <body>
 <div align="center">
 		
-		<form action = "davidHome" ${user == 'david' ? '' : 'style="display:none;"'}>
-				<input type = "submit" value = "Return to Homepage"/>
-		</form>
-		
-		<form action = "userHome" ${user == 'others' ? '' : 'style="display:none;"'}>
+		<form action = "home">
 				<input type = "submit" value = "Return to Homepage"/>
 		</form>
 		

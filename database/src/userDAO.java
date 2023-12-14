@@ -580,6 +580,26 @@ public class userDAO
         return price;
     }
     
+    public String getQuoteReqStatus(int quoteReqID) throws SQLException {
+        String status = null;
+
+        String sql = "SELECT Status FROM QuoteRequest WHERE QuoteRequestID = ?";
+
+        connect_func();
+
+        try (PreparedStatement preparedStatement = connect.prepareStatement(sql)) {
+            preparedStatement.setInt(1, quoteReqID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                	status = resultSet.getString("Status");
+                }
+            }
+        }
+
+        return status;
+    }
+    
     
     public Client getUser(String email) throws SQLException {
     	Client user = null;
@@ -1113,9 +1133,9 @@ public class userDAO
         	    "Height VARCHAR(255)," +
         	    "Location VARCHAR(255)," +
         	    "DistanceToHouse VARCHAR(255)," +
-        	    "Picture1 BLOB," +
-        	    "Picture2 BLOB," +
-        	    "Picture3 BLOB," +
+        	    "Picture1 LONGBLOB," +
+        	    "Picture2 LONGBLOB," +
+        	    "Picture3 LONGBLOB," +
         	    "FOREIGN KEY (QuoteRequestID) REFERENCES QuoteRequest(QuoteRequestID));"
         	);
 

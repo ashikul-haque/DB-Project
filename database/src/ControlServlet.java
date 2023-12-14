@@ -275,10 +275,13 @@ public class ControlServlet extends HttpServlet {
 	    	request.getRequestDispatcher("activitypage2.jsp").forward(request, response);
 	    }
 	    
-	    int quoteReqID = -1;
+	    List<Tree> treeList = null;
+	    
 	    private void requestQuote(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Request Quote");
-	    	quoteReqID = userDAO.getNextQuoteRequestId();
+	    	
+	    	treeList = new ArrayList<>();
+	    	int quoteReqID = userDAO.getNextQuoteRequestId();
 	    	request.setAttribute("quoteReqID", quoteReqID);
 	    	request.setAttribute("treeAddStatus", "");
 	    	request.getRequestDispatcher("requestquote.jsp").forward(request, response);
@@ -286,16 +289,12 @@ public class ControlServlet extends HttpServlet {
 	    
 	    private void addTree(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Add tree");
-	    	if(quoteReqID != -1) {
-	    		request.setAttribute("quoteReqID", quoteReqID);
-	    	}
-	    	else {
-	    		System.out.println("quoteReqID is -1");
-	    	}
+	    	String quoteReqID = request.getParameter("quoteReqID");
+	    	
+	    	request.setAttribute("quoteReqID", quoteReqID);
 	    	request.getRequestDispatcher("addtree.jsp").forward(request, response);
 	    }
-	    
-	    List<Tree> treeList = new ArrayList<>();
+	   
 	    
 	    private byte[] saveFile(Part part) throws IOException {
 	        try (InputStream inputStream = part.getInputStream();
@@ -314,7 +313,7 @@ public class ControlServlet extends HttpServlet {
 	    private void treeAdded(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, SQLException{
 	    	System.out.println("Request Quote: Tree added");
 	    	
-	    	quoteReqID = Integer.parseInt(request.getParameter("quoteReqID"));
+	    	int quoteReqID = Integer.parseInt(request.getParameter("quoteReqID"));
 	    	String size = request.getParameter("size");
 	   	 	String height = request.getParameter("height");
 	   	 	String location = request.getParameter("location");
@@ -328,7 +327,6 @@ public class ControlServlet extends HttpServlet {
 	   	 	byte[] picture3Data = saveFile(picture3Part);
 	   	 	
 	   	 	//TODO: photo handling
-	    	
 	   	 	Tree tree = new Tree(quoteReqID, size, height, location, distance, picture1Data, picture2Data, picture3Data);
 	   	 	treeList.add(tree);
 	 		//userDAO.insert(tree);
@@ -348,16 +346,17 @@ public class ControlServlet extends HttpServlet {
 	        String currentDateAsString = currentDate.format(formatter);
 	    	String status = "pending";
 	    	String note = request.getParameter("note");
+	    	String quoteReqID = request.getParameter("quoteReqID");
 	    	//System.out.println(note);
 	    	
 	    	
 	    	
-	    	QuoteRequest quoteReq = new QuoteRequest(quoteReqID, client.getClientID(), currentDateAsString, status, note);
+	    	QuoteRequest quoteReq = new QuoteRequest(Integer.parseInt(quoteReqID), client.getClientID(), currentDateAsString, status, note);
 	    	userDAO.insert(quoteReq);
 	    	//System.out.println("Quote added");
 	    	
 	    	for (Tree tree : treeList) {
-	    		tree.setquoteReqID(quoteReqID);
+	    		tree.setquoteReqID(Integer.parseInt(quoteReqID));
 	    		userDAO.insert(tree);
 	    	}
 	    	
@@ -631,22 +630,18 @@ public class ControlServlet extends HttpServlet {
 	    	System.out.println("Generate Quote");
 	    	String quoteReqID = request.getParameter("quoteReqID");
 	    	
-	    	String status = "quoted";
-	    	if(!userDAO.update(Integer.parseInt(quoteReqID), status)) {
-	    		System.out.println("Update failed for giveQuote");
-	    	}
-	    	
-	    	System.out.println("Update success for giveQuote");
-	    	
 	    	List<Quote> quotes = userDAO.listQuoteReqQuotes(Integer.parseInt(quoteReqID));
 	    	request.setAttribute("quoteRequestID", quoteReqID);
 	    	
 	    	//Quote latest = quotes.get(quotes.size() - 1);
+	    	String quoteReqStatus = userDAO.getQuoteReqStatus(Integer.parseInt(quoteReqID));
+	    	//System.out.println(quoteReqStatus);
 	    	
-	    	if(session.getAttribute("username").equals("david"))
-	    		request.setAttribute("showReject", 1);
-	    	else
-	    		request.setAttribute("showReject",0);
+	    	if (session.getAttribute("username").equals("david") && !quoteReqStatus.equalsIgnoreCase("cancelled")) {
+	    	    request.setAttribute("showReject", 1);
+	    	} else {
+	    	    request.setAttribute("showReject", 0);
+	    	}
 	    	
 	    	request.setAttribute("listQuotes", quotes);
 	    	request.getRequestDispatcher("giveQuote.jsp").forward(request, response);
@@ -670,6 +665,13 @@ public class ControlServlet extends HttpServlet {
 	    	
 			Quote quote = new Quote(Integer.parseInt(quoteReqID), Double.parseDouble(price), workPeriodStartDate, workPeriodEndDate, currentDateAsString, status, note);
 	    	userDAO.insert(quote);
+	    	
+	    	status = "quoted";
+	    	if(!userDAO.update(Integer.parseInt(quoteReqID), status)) {
+	    		System.out.println("Update failed for submitQuote");
+	    	}
+	    	
+	    	System.out.println("Update success for submitQuote");
 	    	//System.out.println("insert success");
 	    	
 	    	
@@ -677,12 +679,13 @@ public class ControlServlet extends HttpServlet {
 	    	List<Quote> quotes = userDAO.listQuoteReqQuotes(Integer.parseInt(quoteReqID));
 	    	request.setAttribute("quoteRequestID", quoteReqID);
 	    	
-	    	Quote latest = quotes.get(quotes.size() - 1);
+	    	String quoteReqStatus = userDAO.getQuoteReqStatus(Integer.parseInt(quoteReqID));
 	    	
-	    	if(session.getAttribute("username").equals("david"))
-	    		request.setAttribute("showReject", 1);
-	    	else
-	    		request.setAttribute("showReject",0);
+	    	if (session.getAttribute("username").equals("david") && !quoteReqStatus.equalsIgnoreCase("cancelled")) {
+	    	    request.setAttribute("showReject", 1);
+	    	} else {
+	    	    request.setAttribute("showReject", 0);
+	    	}
 	    	
 	    	request.setAttribute("listQuotes", quotes);
 	    	request.getRequestDispatcher("giveQuote.jsp").forward(request, response);

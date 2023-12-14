@@ -32,6 +32,7 @@
             <th>Add tree</th>
             <td align="center" colspan="3">
                 <form action="addtree" method="post">
+                	<input type="hidden" name="quoteReqID" value="${quoteReqID}">
                     <input type="submit" value="Add"/>
                 </form>
             </td>
@@ -47,7 +48,7 @@
 
         <tr>
             <td align="center" colspan="5">
-                
+                	<input type="hidden" name="quoteReqID" value="${quoteReqID}">
                     <input type="submit" value="Request Quote"/>
             </td>
         </tr>
