@@ -201,7 +201,8 @@ public class ControlServlet extends HttpServlet {
 	    		    "Overdue bills",
 	    		    "Bad clients",
 	    		    "Good clients",
-	    		    "Statistics"
+	    		    "Statistics",
+	    		    "Tree Stat"
 	    		);
 	    	request.setAttribute("queries", queries);
 			//request.setAttribute("lists", userDAO.getTopClients());
@@ -228,7 +229,8 @@ public class ControlServlet extends HttpServlet {
 	    		    "Overdue bills",
 	    		    "Bad clients",
 	    		    "Good clients",
-	    		    "Statistics"
+	    		    "Statistics",
+	    		    "Tree Stat"
 	    		);
 	    	request.setAttribute("queries", queries);
 	    	
@@ -252,6 +254,8 @@ public class ControlServlet extends HttpServlet {
 	    		request.setAttribute("lists", userDAO.getClientsPaidWithin24Hours());
 	    	} else if ("Statistics".equals(query)) {
 	    		request.setAttribute("lists", userDAO.getClientSummary());
+	    	} else if ("Tree Stat".equals(query)) {
+	    		request.setAttribute("lists", userDAO.getTreeWorkDates());
 	    	}
 
 	    	
