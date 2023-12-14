@@ -1213,16 +1213,11 @@ public class userDAO
         	    "(12, 6, 'Medium', 6.5, 'Riverbank', 13.0, 'tree12_pic1.jpg', 'tree12_pic2.jpg', 'tree12_pic3.jpg');"
         	);
 
-
-
-
-
-
         
         String quoteDataGeneration = (
         	    "INSERT INTO Quote (QuoteID, QuoteRequestID, Price, WorkPeriodStartDate, WorkPeriodEndDate, DateSubmitted, Status, Note) VALUES " +
         	    "(1, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'rejected', 'Initial quote for tree trimming.'), " +
-        	    "(11, 1, 500.00, '2023-10-05', '2023-10-10', '2023-10-04', 'accepted', 'Updated quote for tree trimming.'), " +
+        	    "(11, 1, 450.00, '2023-10-05', '2023-10-10', '2023-10-04', 'accepted', 'Updated quote for tree trimming.'), " +
         	    "(2, 2, 1200.00, '2023-10-08', '2023-10-15', '2023-10-06', 'accepted', 'Quote for tree removal approved.'), " +
         	    "(3, 3, 300.00, '2023-10-12', '2023-10-18', '2023-10-09', 'accepted', 'Finalized quote for tree pruning.'), " +
         	    "(4, 4, 150.00, '2023-10-15', '2023-10-20', '2023-10-11', 'rejected', 'Initial quote for tree pruning.'), " +
