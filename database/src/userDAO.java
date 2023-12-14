@@ -1007,7 +1007,7 @@ public class userDAO
                 "JOIN Quote Q ON T.QuoteRequestID = Q.QuoteRequestID " +
                 "JOIN OrderOfWork QW ON Q.QuoteID = QW.QuoteID " +
                 "JOIN QuoteRequest QR ON Q.QuoteRequestID = QR.QuoteRequestID " +
-                "WHERE QR.Status IN ('completed', 'billed', 'paid')";
+                "WHERE QR.Status IN ('completed', 'billed', 'paid') AND Q.Status = 'accepted'";
 
         connect_func();
 
