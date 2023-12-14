@@ -675,15 +675,13 @@ public class userDAO
                 "FROM Client C " +
                 "JOIN QuoteRequest QR ON C.ClientID = QR.ClientID " +
                 "JOIN Tree T ON QR.QuoteRequestID = T.QuoteRequestID " +
-                "JOIN Quote Q ON QR.QuoteRequestID = Q.QuoteRequestID " +
-                "WHERE Q.Status = 'accepted' AND QR.Status = 'paid' " +
+                "WHERE QR.Status = 'paid' " +
                 "GROUP BY C.ClientID, C.FirstName, C.LastName " +
                 "HAVING NumberOfTrees = (SELECT MAX(TreeCount) FROM (SELECT COUNT(T2.TreeID) AS TreeCount " +
                 "FROM Client C2 " +
                 "JOIN QuoteRequest QR2 ON C2.ClientID = QR2.ClientID " +
                 "JOIN Tree T2 ON QR2.QuoteRequestID = T2.QuoteRequestID " +
-                "JOIN Quote Q2 ON QR2.QuoteRequestID = Q2.QuoteRequestID " +
-                "WHERE Q2.Status = 'accepted' AND QR2.Status = 'paid' " +
+                "WHERE QR2.Status = 'paid' " +
                 "GROUP BY C2.ClientID) AS TreeCounts)";
 
         connect_func();
