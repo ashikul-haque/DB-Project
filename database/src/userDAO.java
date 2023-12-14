@@ -1002,7 +1002,7 @@ public class userDAO
     public List<String> getTreeWorkDates() throws SQLException {
         List<String> treeWorkDates = new ArrayList<>();
 
-        String sql = "SELECT T.TreeID, QW.WorkPeriodEndDate " +
+        String sql = "SELECT T.TreeID, Q.WorkPeriodEndDate " +
                 "FROM Tree T " +
                 "JOIN Quote Q ON T.QuoteRequestID = Q.QuoteRequestID " +
                 "JOIN OrderOfWork QW ON Q.QuoteID = QW.QuoteID " +
